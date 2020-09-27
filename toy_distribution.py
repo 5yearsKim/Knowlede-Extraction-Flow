@@ -45,6 +45,24 @@ def moon2(num_samples):
     merged = (merged - np.mean(merged, axis=0)) / np.std(merged, axis=0) * 2
     return merged, label
 
+def mixed(num_samples):
+    x1 = np.random.normal(0, 5, num_samples // 2)
+    x2 = np.random.normal(0, 5, num_samples // 2)
+    
+    x1 -= 4
+    x2 += 4
+
+    y1 = (x1 +0.2*x2)**2
+    y2 = (x2 + 0.2*x1)**2
+
+    y1 += 6
+    y2 += 12
+
+    label = np.array([0]*(num_samples//2) + [1]*(num_samples//2))
+    merged = np.array([np.append(x1, x2), np.append(y1, y2)]).T
+    merged = (merged - np.mean(merged, axis=0)) / np.std(merged, axis=0) * 2
+    return merged, label
+
 def stars(num_samples):
     num_groups = 6
     size = 4
@@ -58,10 +76,10 @@ def stars(num_samples):
     return merged
 
 if __name__ == "__main__":
-    dataset, label = moon2(num_samples=102)
+    dataset, label = mixed(num_samples=102)
     colormap = np.array(['b', 'r'])
     print(label)
-    plt.scatter(dataset[:, 0], dataset[:, 1], c=colormap[label])
+    plt.scatter(dataset[:, 0], dataset[:, 1], c=colormap[label], s=3)
     # plt.xlim(-10, 10)
     # plt.ylim(-10, 10)
     # plt.grid(True)
