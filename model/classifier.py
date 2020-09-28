@@ -3,7 +3,7 @@ from torch import nn
 import torch.nn.functional as F
 
 class Classifier(nn.Module):
-    def __init__(self, dim_in=2, dim_out=2,  n_hidden=2, dim_hidden=32):
+    def __init__(self, dim_in, dim_out,  n_hidden, dim_hidden):
         super(Classifier, self).__init__()
         self.n_hidden = n_hidden
         self.in_layer = nn.Linear(dim_in, dim_hidden)

@@ -17,3 +17,11 @@ class AverageMeter:
         self.count += n
         self.avg = self.sum / self.count
 
+
+def dfs_freeze(model):
+    for name, child in model.named_children():
+        for param in child.parameters():
+            # print(param)
+            param.requires_grad = False
+            # print(param)
+        dfs_freeze(child)

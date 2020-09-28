@@ -30,9 +30,9 @@ class Trainer:
         self.optimizer.zero_grad()
         logit = self.model(x)
         loss = self.criterion(logit, label)
-        loss_meter.update(loss.to('cpu').item())
         loss.backward()
         self.optimizer.step()
+        loss_meter.update(loss.item())
 
     def validate(self):
         self.model.eval()
