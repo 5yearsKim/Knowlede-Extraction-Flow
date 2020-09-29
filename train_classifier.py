@@ -12,11 +12,13 @@ optimizer = torch.optim.Adam(model.parameters(), lr=cfg["LR"])
 
 criterion = nn.CrossEntropyLoss()
 
-trainset = ToyDataset(cfg["NUM_SAMPLE"])
-devset = ToyDataset(100)
+trainset = ToyDataset(cfg["NUM_SAMPLE"], type=cfg["TOY_TYPE"])
+devset = ToyDataset(100, type=cfg["TOY_TYPE"])
 
 train_loader = torch.utils.data.DataLoader(trainset, batch_size=cfg["BATCH_SIZE"], shuffle=True)
 dev_loader = torch.utils.data.DataLoader(devset, batch_size=cfg["BATCH_SIZE"], shuffle=True)
 
 trainer = Trainer(model, optimizer, criterion, train_loader, dev_loader)
 trainer.train(cfg["EPOCHS"], print_freq=cfg["PRINT_FREQ"], val_freq=cfg["VAL_FREQ"])
+
+trainer.save("ckpts/classifier.pt")

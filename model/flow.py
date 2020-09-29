@@ -80,10 +80,11 @@ class Scaling(nn.Module):
         Returns:
             transformed tensor and log-determinant of Jacobian.
         """
-        log_det_J = torch.sum(self.scale)
         if reverse:
+            log_det_J = - torch.sum(self.scale)
             x = x * torch.exp(-self.scale)
         else:
+            log_det_J = torch.sum(self.scale)
             x = x * torch.exp(self.scale)
         return x, log_det_J
 
