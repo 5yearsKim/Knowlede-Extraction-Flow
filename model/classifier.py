@@ -7,9 +7,7 @@ class Classifier(nn.Module):
         super(Classifier, self).__init__()
         self.n_hidden = n_hidden
         self.in_layer = nn.Linear(dim_in, dim_hidden)
-        self.hidden = []
-        for i in range(n_hidden):
-            self.hidden += [nn.Linear(dim_hidden, dim_hidden)]
+        self.hidden = nn.ModuleList([nn.Linear(dim_hidden, dim_hidden) for i in range(n_hidden)])
         self.out_layer = nn.Linear(dim_hidden, dim_out)
 
     def forward(self, x):

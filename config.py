@@ -2,12 +2,12 @@
 '''classifier config'''
 CLS_CONFIG = {
     # Dataset
-    "NUM_SAMPLE": 1024,
+    "NUM_SAMPLE": 10240,
     "TOY_TYPE": "circle",
     # train_config
-    "BATCH_SIZE":16,
+    "BATCH_SIZE":32,
     "LR": 5e-3,
-    "EPOCHS": 40,
+    "EPOCHS": 5,
     "PRINT_FREQ": 20,
     "VAL_FREQ": 1,
     # model config
@@ -19,17 +19,17 @@ CLS_CONFIG = {
 
 FLOW_CONFIG = {
     # Dataset
-    "NUM_SAMPLE": 2048,
+    "NUM_SAMPLE": 10240,
     # model config
     "COUPLING": 6,
     "IN_OUT_DIM": 2,
     "COND_DIM": 2,
-    "MID_DIM": 40,
-    "HIDDEN":3, 
+    "MID_DIM": 30,
+    "HIDDEN":2, 
     # train config
-    "LR":1e-3,
+    "LR":5e-4,
     "BATCH_SIZE":32,
-    "EPOCHS":5,
+    "EPOCHS":20,
     "PRINT_FREQ":20,
     "VAL_FREQ":1
 }

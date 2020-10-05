@@ -63,9 +63,9 @@ def mixed(num_samples):
 
 def circle(num_samples):
     r = np.random.normal(0, 2, num_samples // 2)
-    theta1 = np.random.normal(0, 2000, num_samples // 2)
-    theta2 = np.random.normal(0, 2000, num_samples // 2)
-    
+    theta1 = np.random.normal(0, 100000, num_samples // 2) 
+    theta2 = np.random.normal(0, 100000, num_samples // 2) 
+
     x1 = (5 - r**2) * np.cos(theta1)
     x2 = (6 + r**2) * np.cos(theta2)
 
@@ -74,7 +74,6 @@ def circle(num_samples):
 
     label = np.array([0]*(num_samples//2) + [1]*(num_samples//2))
     merged = np.array([np.append(x1, x2), np.append(y1, y2)]).T
-    merged = (merged - np.mean(merged, axis=0)) / np.std(merged, axis=0) * 2
     return merged, label
 
 def stars(num_samples):
@@ -97,6 +96,7 @@ if __name__ == "__main__":
     # plt.ylim(-10, 10)
     # plt.grid(True)
     # plt.savefig("moon2_ref")
+    plt.grid()
     plt.show()
-
+    print(dataset)
     # np.save('moon1.npy', merged)
