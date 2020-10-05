@@ -19,16 +19,26 @@ state_dict = torch.load("ckpts/extractor.pt")
 flow.load_state_dict(state_dict["flow_state_dict"])
 
 classifier = Classifier(Ccfg["DIM_IN"], Ccfg["DIM_OUT"], Ccfg["N_HIDDEN"], Ccfg["DIM_HIDDEN"])
-classifier.load_state_dict(state_dict["classifer_state_dict"])
-
-softmax = torch.nn.Softmax()
-
-for z, label in dataloader:
-    cond = to_one_hot(label, Fcfg["COND_DIM"])        
-    out, _ = flow(z, cond, reverse=True)
-    logit = classifier(out)
-    print("loc = ", out.detach())
-    print(softmax(logit).detach(), label)
+# classifier.load_state_dict(state_dict["classifier_state_dict"])
+state_dict = torch.load("ckpts/classifier.pt")
+classifier.load_state_dict(state_dict["model_state_dict"])
 
 
+
+softmax = torch.nn.Softmax(dim=1)
+
+
+# for z, label in dataloader:
+#     cond = to_one_hot(label, Fcfg["COND_DIM"])        
+#     out, _ = flow(z, cond, reverse=True)
+#     logit = classifier(out)
+#     print("loc = ", out.detach())
+#     print(softmax(logit.detach()), label, '\n')
+
+for i in range(10):
+    loc = prior.sample((1,2)) * 1
+    logit = classifier(loc)
+    print(loc.square().sum().sqrt())
+    print(logit.detach())
+    print(softmax(logit.detach()), "\n")
 

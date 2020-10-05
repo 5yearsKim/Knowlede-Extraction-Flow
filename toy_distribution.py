@@ -46,14 +46,14 @@ def mixed(num_samples):
     x1 = np.random.normal(0, 5, num_samples // 2)
     x2 = np.random.normal(0, 5, num_samples // 2)
     
-    x1 -= 6
-    x2 += 6
+    x1 -= 0.1
+    x2 += 0.1
 
     y1 = (x1 +0.2*x2)**2
     y2 = (x2 + 0.2*x1)**2
 
     y1 += 6
-    y2 += 12
+    y2 += 6
 
     label = np.array([0]*(num_samples//2) + [1]*(num_samples//2))
     merged = np.array([np.append(x1, x2), np.append(y1, y2)]).T
@@ -67,13 +67,10 @@ def circle(num_samples):
     theta2 = np.random.normal(0, 2000, num_samples // 2)
     
     x1 = (5 - r**2) * np.cos(theta1)
-    x2 = (5 + r**2) * np.cos(theta2)
+    x2 = (6 + r**2) * np.cos(theta2)
 
     y1 = (5 - r**2) * np.sin(theta1)
-    y2 = (5 + r**2) * np.sin(theta2)
-
-    # y1 += 6
-    # y2 += 12
+    y2 = (6 + r**2) * np.sin(theta2)
 
     label = np.array([0]*(num_samples//2) + [1]*(num_samples//2))
     merged = np.array([np.append(x1, x2), np.append(y1, y2)]).T

@@ -15,6 +15,6 @@ class Extractor(nn.Module):
         log_ll = torch.bmm(confidence.view(bs, 1, cond_dim), cond.view(bs, cond_dim, 1)).view(bs)
         reg = torch.sum(torch.square(y), dim=1)
         # print(log_det_J, log_ll)
-        return log_det_J + 100*log_ll - 0.01 * reg
+        return log_det_J + 40*log_ll - 0.01 * reg
 
 
