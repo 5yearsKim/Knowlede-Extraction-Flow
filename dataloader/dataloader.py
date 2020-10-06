@@ -1,4 +1,4 @@
-from toy_distribution import mixed, moon2, moon1, circle
+from .toy_distribution import mixed, moon2, moon1, circle
 import torch
 
 class ToyDataset(torch.utils.data.Dataset):

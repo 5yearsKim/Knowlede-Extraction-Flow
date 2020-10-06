@@ -4,7 +4,7 @@ from trainer import Trainer
 from model import Classifier
 from dataloader import ToyDataset
 from config import CLS_CONFIG as cfg
-from utils import LabelSmoothLoss
+from trainer.utils import LabelSmoothLoss
 
 
 """  model define """

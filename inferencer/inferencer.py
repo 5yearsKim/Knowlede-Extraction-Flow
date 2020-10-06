@@ -1,5 +1,8 @@
 import torch
-from utils import to_one_hot
+
+def to_one_hot(labels, num_classes):
+    y = torch.eye(num_classes) 
+    return y[labels] 
 
 class Inferencer:
     def __init__(self, model, dataloader, cond_dim=2):
