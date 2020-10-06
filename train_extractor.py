@@ -1,5 +1,5 @@
 import torch
-from model import Classifier, NICE, Extractor
+from model import Classifier, NICE, AffineNICE, Extractor
 from utils import dfs_freeze
 from trainer import ExtractorTrainer
 from dataloader import PriorDataset
@@ -9,7 +9,7 @@ from config import CLS_CONFIG as Ccfg
 prior = torch.distributions.Normal( torch.tensor(0.), torch.tensor(1.))
 
 # define models / load classifier
-flow = NICE(prior, Fcfg["COUPLING"], Fcfg["IN_OUT_DIM"], Fcfg["COND_DIM"], Fcfg["MID_DIM"], Fcfg["HIDDEN"] )
+flow = AffineNICE(prior, Fcfg["COUPLING"], Fcfg["IN_OUT_DIM"], Fcfg["COND_DIM"], Fcfg["MID_DIM"], Fcfg["HIDDEN"] )
 classifier = Classifier(Ccfg["DIM_IN"], Ccfg["DIM_OUT"], Ccfg["N_HIDDEN"], Ccfg["DIM_HIDDEN"])
 
 state_dict = torch.load("ckpts/classifier.pt")

@@ -6,8 +6,9 @@ CLS_CONFIG = {
     "TOY_TYPE": "circle",
     # train_config
     "BATCH_SIZE":32,
-    "LR": 5e-3,
-    "EPOCHS": 5,
+    "LR": 1e-3,
+    "WD": 1e-2,
+    "EPOCHS": 10,
     "PRINT_FREQ": 20,
     "VAL_FREQ": 1,
     # model config
@@ -29,7 +30,7 @@ FLOW_CONFIG = {
     # train config
     "LR":5e-4,
     "BATCH_SIZE":32,
-    "EPOCHS":20,
+    "EPOCHS":10,
     "PRINT_FREQ":20,
     "VAL_FREQ":1
 }

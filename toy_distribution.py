@@ -2,24 +2,22 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
+
 def moon1(num_samples):
-    x1 = np.random.normal(0, 10, num_samples // 2)
-    x2 = np.random.normal(0, 10, num_samples // 2)
+    x1 = np.random.normal(0, 1, num_samples // 2)
+    x2 = np.random.normal(0, 1, num_samples // 2)
     
-    x1 -= 6
-    x2 += 6
+    y1 = x1**2 + (x2**2)
+    y2 = -x2**2 - (x1**2)
 
-    y1 = x1**3 + 20*(x2**2)
-    y2 = x2**3 - 20 *(x1**2)
-
-    # y1 += 6
-    # y2 += 12
+    x1 += 2
+    x2 -= 2
+    y1 += 4
+    y2 -= 4
 
     label = np.array([0]*(num_samples//2) + [1]*(num_samples//2))
     merged = np.array([np.append(x1, x2), np.append(y1, y2)]).T
-    merged = (merged - np.mean(merged, axis=0)) / np.std(merged, axis=0) * 2
     return merged, label
-
 
 def moon2(num_samples):
     x1 = np.random.normal(0, 3, num_samples // 2)
@@ -39,7 +37,6 @@ def moon2(num_samples):
 
     label = np.array([0]*(num_samples//2) + [1]*(num_samples//2))
     merged = np.array([np.append(x1, y1), np.append(x2, y2)]).T
-    merged = (merged - np.mean(merged, axis=0)) / np.std(merged, axis=0) * 2
     return merged, label
 
 def mixed(num_samples):
@@ -57,7 +54,6 @@ def mixed(num_samples):
 
     label = np.array([0]*(num_samples//2) + [1]*(num_samples//2))
     merged = np.array([np.append(x1, x2), np.append(y1, y2)]).T
-    merged = (merged - np.mean(merged, axis=0)) / np.std(merged, axis=0) * 2
     return merged, label
 
 
