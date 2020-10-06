@@ -12,7 +12,7 @@ is_aided = True
 # dataset for inference
 prior = torch.distributions.Normal( torch.tensor(0.), torch.tensor(1.))
 
-dataset = PriorDataset(prior, Fcfg["IN_OUT_DIM"], Fcfg["COND_DIM"], 4000 )
+dataset = PriorDataset(prior, Fcfg["IN_OUT_DIM"], Fcfg["COND_DIM"], 1000 )
 dataloader = torch.utils.data.DataLoader(dataset, batch_size=Fcfg["BATCH_SIZE"], shuffle=True)
 
 # load model from checkpoint 
@@ -33,8 +33,10 @@ colormap = np.array(['b', 'r'])
 plt.scatter(data[:, 0], data[:, 1], c=colormap[label], s=1)
 
 if is_aided:
-    aided_colormap = np.array(['#0000aa', '#aa0000'])
-    for data, label in aided_loader:
-        plt.scatter(data[:, 0], data[:, 1], c=aided_colormap[label], s = 10)
+    aided_colormap = np.array(['#00ffff', '#ffff00'])
+    for i, (data, label) in enumerate(aided_loader):
+        plt.scatter(data[:, 0], data[:, 1], c=aided_colormap[label], s = 5)
+        if i == 4:
+            break
 
 plt.show()

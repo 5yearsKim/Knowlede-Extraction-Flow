@@ -6,6 +6,8 @@ from dataloader import PriorDataset, ToyDataset
 from config import FLOW_CONFIG as Fcfg
 from config import CLS_CONFIG as Ccfg
 
+torch.manual_seed(0)
+torch.cuda.manual_seed_all(0)
 prior = torch.distributions.Normal( torch.tensor(0.), torch.tensor(1.))
 
 # define models / load classifier
@@ -34,7 +36,8 @@ aidedset = ToyDataset(Fcfg["NUM_AIDED_SAMPLE"], type=Ccfg["TOY_TYPE"])
 aidedloader = torch.utils.data.DataLoader(aidedset, batch_size=Fcfg["AIDED_BATCH_SIZE"], shuffle=True)
 
 # train model
-trainer = AidedExtractorTrainer(extractor, optimizer, train_loader, dev_loader, aidedloader, num_class=Fcfg["COND_DIM"])
+trainer = AidedExtractorTrainer(extractor, optimizer, train_loader, dev_loader, aidedloader, \
+                                num_class=Fcfg["COND_DIM"], label_smoothe=Fcfg["SMOOTHE"])
 trainer.train(Fcfg["EPOCHS"], Fcfg["PRINT_FREQ"], Fcfg["VAL_FREQ"])
 
 # save model

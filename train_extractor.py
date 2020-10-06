@@ -31,7 +31,7 @@ train_loader = torch.utils.data.DataLoader(trainset, batch_size=Fcfg["BATCH_SIZE
 dev_loader = torch.utils.data.DataLoader(devset, batch_size=Fcfg["BATCH_SIZE"], shuffle=True)
 
 # train model
-trainer = ExtractorTrainer(extractor, optimizer, train_loader, dev_loader, num_class=Fcfg["COND_DIM"])
+trainer = ExtractorTrainer(extractor, optimizer, train_loader, dev_loader, num_class=Fcfg["COND_DIM"], label_smoothe=Fcfg["SMOOTHE"])
 trainer.train(Fcfg["EPOCHS"], Fcfg["PRINT_FREQ"], Fcfg["VAL_FREQ"])
 
 # save model

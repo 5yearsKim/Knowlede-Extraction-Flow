@@ -21,7 +21,7 @@ CLS_CONFIG = {
 FLOW_CONFIG = {
     # Dataset
     "NUM_SAMPLE": 10240,
-    "NUM_AIDED_SAMPLE":24,
+    "NUM_AIDED_SAMPLE":2400,
     # model config
     "COUPLING": 6,
     "IN_OUT_DIM": 2,
@@ -29,8 +29,9 @@ FLOW_CONFIG = {
     "MID_DIM": 30,
     "HIDDEN":2, 
     # train config
-    "LR":2e-4,
+    "LR":1e-4,
     "WD":1e-2,
+    "SMOOTHE":0.05,
     "BATCH_SIZE":32,
     "AIDED_BATCH_SIZE":8,
     "EPOCHS":10,

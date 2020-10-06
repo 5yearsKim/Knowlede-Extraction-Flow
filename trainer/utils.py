@@ -43,10 +43,11 @@ def dfs_freeze(model):
 
 
 def to_one_hot(labels, num_classes):
-    y = torch.eye(num_classes) 
+    y = torch.eye(num_classes)
     return y[labels] 
 
 if __name__ == "__main__":
     label = torch.tensor([1, 2, 0, 2, 2])
     y = to_one_hot(label, 4)
+    y = label_smoothe(y, smoothing=0.1)
     print(y)

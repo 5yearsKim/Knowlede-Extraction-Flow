@@ -3,15 +3,16 @@ from .trainer import Trainer
 from .utils import to_one_hot, AverageMeter
 
 class ExtractorTrainer(Trainer):
-    def __init__(self, model, optimizer, train_loader, dev_loader, num_class=2):
+    def __init__(self, model, optimizer, train_loader, dev_loader, num_class=2, label_smoothe=0.):
         self.num_class = num_class
         criterion=None
         super(ExtractorTrainer, self).__init__(model, optimizer, criterion, train_loader, dev_loader)
+        self.label_smoothe = label_smoothe
 
     def train_step(self, x, label, loss_meter):
         x, label = x.to(self.device), to_one_hot(label, self.num_class).to(self.device)
         self.optimizer.zero_grad()
-        loss = -torch.mean(self.model(x, label))
+        loss = -torch.mean(self.model(x, label, smoothing=self.label_smoothe))
         loss.backward()
         self.optimizer.step()
         loss_meter.update(loss.item())
@@ -39,8 +40,8 @@ class ExtractorTrainer(Trainer):
 
            
 class AidedExtractorTrainer(ExtractorTrainer):
-    def __init__(self, model, optimizer, train_loader, dev_loader, aided_loader, num_class=2):
-        super(AidedExtractorTrainer, self).__init__(model, optimizer, train_loader, dev_loader, num_class)
+    def __init__(self, model, optimizer, train_loader, dev_loader, aided_loader, num_class=2, label_smoothe=0.):
+        super(AidedExtractorTrainer, self).__init__(model, optimizer, train_loader, dev_loader, num_class, label_smoothe)
         self.aided_loader = aided_loader
 
     def aided_train(self):
@@ -50,6 +51,9 @@ class AidedExtractorTrainer(ExtractorTrainer):
             self.optimizer.zero_grad()
             log_prob = self.model.flow.log_prob(x, label)
             loss = - torch.mean(log_prob)
+            if torch.isnan(loss):
+                print("nan")
+                continue
             loss.backward()
             self.optimizer.step()
             loss_meter.update(loss.item())
