@@ -20,11 +20,12 @@ class ExtractorTrainer(Trainer):
     def validate(self):
         self.model.eval()
         loss_meter = AverageMeter()
-        for x, label in self.dev_loader:
-            x, label = x.to(self.device), to_one_hot(label, self.num_class).to(self.device)
-            loss = - torch.mean(self.model(x, label))
-            loss_meter.update(loss.to('cpu').item())
-        print(f"[Validation]: loss : {loss_meter.avg}\n")
+        with torch.no_grad():
+            for x, label in self.dev_loader:
+                x, label = x.to(self.device), to_one_hot(label, self.num_class).to(self.device)
+                loss = - torch.mean(self.model(x, label))
+                loss_meter.update(loss.to('cpu').item())
+            print(f"[Validation]: loss : {loss_meter.avg}\n")
 
     def save(self, save_path):
         torch.save({
@@ -46,17 +47,19 @@ class AidedExtractorTrainer(ExtractorTrainer):
 
     def aided_train(self):
         loss_meter = AverageMeter()
-        for x, label in self.aided_loader:
+        for i, (x, label) in enumerate(self.aided_loader):
             x, label = x.to(self.device), to_one_hot(label, self.num_class).to(self.device)
             self.optimizer.zero_grad()
             log_prob = self.model.flow.log_prob(x, label)
-            loss = - torch.mean(log_prob)
+            loss = -torch.mean(log_prob)
             if torch.isnan(loss):
                 print("nan")
                 continue
             loss.backward()
             self.optimizer.step()
             loss_meter.update(loss.item())
+            # if i % 20 == 0 :
+            #     print(f"loss = {loss_meter.avg}")
         print(f"##aided loss : {loss_meter.avg}")
     
     def on_epoch_start(self):

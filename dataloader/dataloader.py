@@ -1,4 +1,4 @@
-from .toy_distribution import mixed, moon2, moon1, circle
+from .toy_distribution import mixed, moon2, moon1, circle, pizza
 import torch
 
 class ToyDataset(torch.utils.data.Dataset):
@@ -12,6 +12,8 @@ class ToyDataset(torch.utils.data.Dataset):
             data, label = mixed(num_samples)
         elif type == 'moon1':
             data, label = moon1(num_samples)
+        elif type == 'pizza':
+            data, label = pizza(num_samples)
         else:
             raise ValueError(f'type {type} is not supported!')
         self.data, self.label = torch.from_numpy(data).to(torch.float32), torch.from_numpy(label)

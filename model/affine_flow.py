@@ -79,7 +79,7 @@ class AffineNICE(nn.Module):
 
         for m in self.modules():
             if isinstance(m, nn.Linear):
-                m.weight.data.uniform_(-0.01, 0.01)
+                m.weight.data.uniform_(-0.04, 0.04)
                 m.bias.data.fill_(0.)
 
     def g(self, z, cond):
@@ -118,7 +118,7 @@ class AffineNICE(nn.Module):
         """
         z, log_det_J = self.f(x, cond)
         log_ll = torch.sum(self.prior.log_prob(z), dim=1)
-        return log_ll + 0.1* log_det_J
+        return log_ll + log_det_J
 
     def sample(self, cond):
         """Generates samples.

@@ -17,3 +17,6 @@ print(torch.exp(confidence))
 log_ll = torch.bmm(confidence.view(bs, 1, cond_dim), label.view(bs, cond_dim, 1)).view(bs)
 
 print(log_ll)
+
+
+from aaa import dd

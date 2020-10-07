@@ -35,7 +35,7 @@ plt.scatter(data[:, 0], data[:, 1], c=colormap[label], s=1)
 if is_aided:
     aided_colormap = np.array(['#00ffff', '#ffff00'])
     for i, (data, label) in enumerate(aided_loader):
-        plt.scatter(data[:, 0], data[:, 1], c=aided_colormap[label], s = 5)
+        plt.scatter(data[:, 0], data[:, 1], c=aided_colormap[label], s = 3)
         if i == 4:
             break
 
