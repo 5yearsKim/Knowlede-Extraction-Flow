@@ -14,6 +14,7 @@ class Coupling(nn.Module):
         """
         super(Coupling, self).__init__()
         self.mask_config = mask_config
+        self.scale = nn.Parameter(torch.ones(in_out_dim//2))
 
         self.in_block = nn.Sequential(
             nn.Linear(in_out_dim//2, mid_dim),
@@ -26,6 +27,7 @@ class Coupling(nn.Module):
                 nn.Linear(mid_dim, mid_dim),
                 nn.ReLU()) for _ in range(hidden - 1)])
         self.out_block = nn.Linear(mid_dim, (in_out_dim//2) * 2)
+    
 
     def forward(self, x, cond, reverse=False):
         """Forward pass.
@@ -46,8 +48,10 @@ class Coupling(nn.Module):
         for i in range(len(self.mid_block)):
             off_ = self.mid_block[i](off_)
         off_ = self.out_block(off_)
-        log_scale, shift = off_.split(W//2, dim=1)
+        s, shift = off_.split(W//2, dim=1)
         
+        log_scale = self.scale * torch.tanh(s)
+
         if reverse:
             on = (on - shift) * torch.exp(-log_scale)
         else:
@@ -77,10 +81,10 @@ class AffineNICE(nn.Module):
                      mask_config=(mask_config+i)%2) \
             for i in range(coupling)])
 
-        for m in self.modules():
-            if isinstance(m, nn.Linear):
-                m.weight.data.uniform_(-0.04, 0.04)
-                m.bias.data.fill_(0.)
+        # for m in self.modules():
+        #     if isinstance(m, nn.Linear):
+        #         m.weight.data.uniform_(-0.04, 0.04)
+        #         m.bias.data.fill_(0.)
 
     def g(self, z, cond):
         """Transformation g: Z -> X (inverse of f).
