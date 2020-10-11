@@ -44,7 +44,15 @@ def dfs_freeze(model):
 
 def to_one_hot(labels, num_classes):
     y = torch.eye(num_classes)
-    return y[labels] 
+    return y[labels]
+
+def dequantize_to_logit(x, bound=0.9):
+    y = (x * 255. + torch.rand_like(x)) / 256.
+    y = (2 * y - 1) * bound
+    y = (y + 1) / 2
+    y = y.log() - (1. - y).log()
+
+    return y
 
 if __name__ == "__main__":
     label = torch.tensor([1, 2, 0, 2, 2])

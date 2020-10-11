@@ -1,1 +1,1 @@
-from .dataloader import ToyDataset, PriorDataset
+from .dataloader import PriorDataset

@@ -10,6 +10,7 @@ class ExtractorTrainer(Trainer):
         self.label_smoothe = label_smoothe
 
     def train_step(self, x, label, loss_meter):
+        x, label = self.preprocess(x, label)
         x, label = x.to(self.device), to_one_hot(label, self.num_class).to(self.device)
         self.optimizer.zero_grad()
         loss = -torch.mean(self.model(x, label, smoothing=self.label_smoothe))
@@ -17,7 +18,8 @@ class ExtractorTrainer(Trainer):
         self.optimizer.step()
         loss_meter.update(loss.item())
 
-    def validate(self):
+    @torch.no_grad()
+    def validate(self, epoch):
         self.model.eval()
         loss_meter = AverageMeter()
         with torch.no_grad():
@@ -38,6 +40,7 @@ class ExtractorTrainer(Trainer):
         save_dict = torch.load(load_path)
         self.model.flow.load_state_dict(save_dict['flow_state_dict'])
         self.model.classifer.load_state_dict(save_dict['classifier_state_dict'])
+
 
            
 class AidedExtractorTrainer(ExtractorTrainer):

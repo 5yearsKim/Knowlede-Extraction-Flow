@@ -1,41 +1,19 @@
-from .toy_distribution import mixed, moon2, moon1, circle, pizza
 import torch
 
-class ToyDataset(torch.utils.data.Dataset):
-    def __init__(self, num_samples, type='mixed'):
-        self.num_samples = num_samples
-        if type == 'moon2':
-            data, label = moon2(num_samples)
-        elif type == 'circle':
-            data,label = circle(num_samples)
-        elif type == 'mixed':
-            data, label = mixed(num_samples)
-        elif type == 'moon1':
-            data, label = moon1(num_samples)
-        elif type == 'pizza':
-            data, label = pizza(num_samples)
-        else:
-            raise ValueError(f'type {type} is not supported!')
-        self.data, self.label = torch.from_numpy(data).to(torch.float32), torch.from_numpy(label)
-
-    def __len__(self):
-        return self.num_samples
-    
-    def __getitem__(self, index):
-        return self.data[index], self.label[index]
 
 class PriorDataset(torch.utils.data.Dataset):
-    def __init__(self, prior, in_out_dim, cond_dim, num_samples):
-        self.num_samples = num_samples
+    def __init__(self, prior, num_sample, data_size, cond_dim, temp=1.):
         self.prior = prior
-        self.in_out_dim = in_out_dim
+        self.num_sample = num_sample
+        self.data_size = data_size
         self.cond_dim = cond_dim
+        self.temp = temp
 
     def __len__(self):
-        return self.num_samples
+        return self.num_sample
     
     def __getitem__(self, index):
-        data = self.prior.sample([self.in_out_dim])
+        data = self.prior.sample(self.data_size) *self.temp
         label = torch.randint(0, self.cond_dim, [1]).item()
         return data, label
 

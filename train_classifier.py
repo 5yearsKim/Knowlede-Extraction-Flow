@@ -1,31 +1,35 @@
 import torch
 from torch import nn
-from trainer import Trainer
+import torchvision
+from torchvision import transforms
 from model import Classifier
-from dataloader import ToyDataset
-from config import CLS_CONFIG as cfg
-from trainer.utils import LabelSmoothLoss
+from trainer import Trainer
+from config import CLS_CONFIG as Ccfg
 
 
-"""  model define """
-model = Classifier(cfg["DIM_IN"], cfg["DIM_OUT"], cfg["N_HIDDEN"], cfg["DIM_HIDDEN"])
-optimizer = torch.optim.Adam(model.parameters(), lr=cfg["LR"], weight_decay=cfg["WD"])
+""" dataloader """
+transform = transforms.Compose([
+    transforms.Resize(32),
+    transforms.ToTensor()
+])
+
+trainset = torchvision.datasets.MNIST('./data', train=True, download=True, transform=transform)
+devset = torchvision.datasets.MNIST('./data', train=False, download=True, transform=transform)
+
+trainloader = torch.utils.data.DataLoader(trainset, batch_size=Ccfg["BATCH_SIZE"])
+devloader = torch.utils.data.DataLoader(devset, batch_size=Ccfg["BATCH_SIZE"])
+
+""" define model """
+model = Classifier(nc=Ccfg["NC"], im_size=Ccfg["IM_SIZE"], n_filter=Ccfg["N_FILTER"], n_class=Ccfg["N_CLASS"])
+optimizer = torch.optim.Adam(model.parameters(), lr=Ccfg["LR"], weight_decay=Ccfg["WD"])
 
 """ criterion define """
-# criterion = nn.CrossEntropyLoss()
-criterion = LabelSmoothLoss(smoothing=0.1) 
-
-
-""" dataloader  """
-trainset = ToyDataset(cfg["NUM_SAMPLE"], type=cfg["TOY_TYPE"])
-devset = ToyDataset(1000, type=cfg["TOY_TYPE"])
-
-train_loader = torch.utils.data.DataLoader(trainset, batch_size=cfg["BATCH_SIZE"], shuffle=True)
-dev_loader = torch.utils.data.DataLoader(devset, batch_size=cfg["BATCH_SIZE"], shuffle=True)
+criterion = nn.CrossEntropyLoss()
 
 """ train """
-trainer = Trainer(model, optimizer, criterion, train_loader, dev_loader)
-trainer.train(cfg["EPOCHS"], print_freq=cfg["PRINT_FREQ"], val_freq=cfg["VAL_FREQ"])
+trainer = Trainer(model, optimizer, criterion, trainloader, devloader)
+trainer.train(epochs=Ccfg["EPOCHS"], print_freq=Ccfg["PRINT_FREQ"], val_freq=Ccfg["VAL_FREQ"])
 
 """ save model """
 trainer.save("ckpts/classifier.pt")
+

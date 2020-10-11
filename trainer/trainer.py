@@ -26,9 +26,10 @@ class Trainer:
             print(f"*epoch {epoch}: loss = {loss_meter.avg}")
             if i%val_freq ==0:
                 with torch.no_grad():
-                    self.validate()
+                    self.validate(epoch)
 
     def train_step(self, x, label, loss_meter):
+        x, label = self.preprocess(x, label)
         x, label = x.to(self.device), label.to(self.device)
         self.optimizer.zero_grad()
         logit = self.model(x)
@@ -37,11 +38,12 @@ class Trainer:
         self.optimizer.step()
         loss_meter.update(loss.item())
 
-    def validate(self):
+    def validate(self, epoch):
         self.model.eval()
         loss_meter = AverageMeter()
         acc_meter = AverageMeter()
         for x, label in self.dev_loader:
+            x, label = self.preprocess(x, label)
             x, label = x.to(self.device), label.to(self.device)
             logit = self.model(x)
             # loss calculation
@@ -51,13 +53,16 @@ class Trainer:
             _, predicted = torch.max(logit.to('cpu'), 1)
             hit_rate = float(predicted.eq(label).sum()) / float(len(label))
             acc_meter.update(hit_rate, n=len(label))
-        print(f"[Validation]: loss : {loss_meter.avg}, acc : {acc_meter.avg}\n")
+        print(f"[{epoch} epoch Validation]: loss : {loss_meter.avg}, acc : {acc_meter.avg}\n")
 
     def on_train_start(self):
         self.model.train()
 
     def on_epoch_start(self):
         self.model.train()
+
+    def preprocess(self, x, label):
+        return x, label
             
     def save(self, save_path):
         torch.save({
