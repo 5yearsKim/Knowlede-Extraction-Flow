@@ -1,6 +1,6 @@
 import torch
 from .trainer import Trainer
-from .utils import to_one_hot, AverageMeter
+from .utils import to_one_hot, AverageMeter, dequantize_to_logit
 
 class ExtractorTrainer(Trainer):
     def __init__(self, model, optimizer, train_loader, dev_loader, num_class=2, label_smoothe=0.):
@@ -10,7 +10,6 @@ class ExtractorTrainer(Trainer):
         self.label_smoothe = label_smoothe
 
     def train_step(self, x, label, loss_meter):
-        x, label = self.preprocess(x, label)
         x, label = x.to(self.device), to_one_hot(label, self.num_class).to(self.device)
         self.optimizer.zero_grad()
         loss = -torch.mean(self.model(x, label, smoothing=self.label_smoothe))
@@ -21,13 +20,13 @@ class ExtractorTrainer(Trainer):
     @torch.no_grad()
     def validate(self, epoch):
         self.model.eval()
-        loss_meter = AverageMeter()
+        acc_meter = AverageMeter()
         with torch.no_grad():
             for x, label in self.dev_loader:
                 x, label = x.to(self.device), to_one_hot(label, self.num_class).to(self.device)
-                loss = - torch.mean(self.model(x, label))
-                loss_meter.update(loss.to('cpu').item())
-            print(f"[Validation]: loss : {loss_meter.avg}\n")
+                acc = self.model.get_acc(x, label)
+                acc_meter.update(acc, x.size(0))
+            print(f"[{epoch} epoch Validation]: acc : {acc_meter.avg}\n")
 
     def save(self, save_path):
         torch.save({
@@ -39,7 +38,7 @@ class ExtractorTrainer(Trainer):
     def load(self, load_path):
         save_dict = torch.load(load_path)
         self.model.flow.load_state_dict(save_dict['flow_state_dict'])
-        self.model.classifer.load_state_dict(save_dict['classifier_state_dict'])
+        self.model.classifier.load_state_dict(save_dict['classifier_state_dict'])
 
 
            
@@ -51,14 +50,13 @@ class AidedExtractorTrainer(ExtractorTrainer):
     def aided_train(self):
         loss_meter = AverageMeter()
         for i, (x, label) in enumerate(self.aided_loader):
-            x, label = x.to(self.device), to_one_hot(label, self.num_class).to(self.device)
+            x, label = self.preprocess(x, label)
+            x, label = x.view(x.size(0), -1).to(self.device), label.to(self.device)
             self.optimizer.zero_grad()
             log_prob = self.model.flow.log_prob(x, label)
             loss = -torch.mean(log_prob)
-            if torch.isnan(loss):
-                print("nan")
-                continue
             loss.backward()
+            torch.nn.utils.clip_grad_norm_(self.model.flow.parameters(), 1.)
             self.optimizer.step()
             loss_meter.update(loss.item())
             # if i % 20 == 0 :
@@ -69,12 +67,9 @@ class AidedExtractorTrainer(ExtractorTrainer):
         self.model.flow.train()
         self.aided_train()
 
-    def save(self, save_path):
-        torch.save({
-            'flow_state_dict': self.model.flow.state_dict(),
-            'classifier_state_dict': self.model.classifier.state_dict(),
-            'optimizer': self.optimizer.state_dict(),
-            'aided_loader': self.aided_loader,
-            }, save_path)
+    def preprocess(self, x, label):
+        x = dequantize_to_logit(x, bound=0.9)
+        label = to_one_hot(label, self.num_class)
+        return x, label
 
         

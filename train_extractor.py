@@ -33,6 +33,7 @@ dev_loader = torch.utils.data.DataLoader(devset, batch_size=Fcfg["BATCH_SIZE"], 
 
 # train model
 trainer = ExtractorTrainer(extractor, optimizer, train_loader, dev_loader, num_class=Fcfg["COND_DIM"], label_smoothe=Fcfg["SMOOTHE"])
+# trainer.load("ckpts/extractor.pt")
 trainer.train(Fcfg["EPOCHS"], Fcfg["PRINT_FREQ"], Fcfg["VAL_FREQ"])
 
 # save model

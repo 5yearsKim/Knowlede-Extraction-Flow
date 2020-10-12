@@ -4,8 +4,8 @@ from .utils import AverageMeter, to_one_hot
 
 class Trainer:
     def __init__(self, model, optimizer, criterion, train_loader, dev_loader):
-        # self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-        self.device = torch.device('cpu')
+        self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        # self.device = torch.device('cpu')
         self.model = model.to(self.device)
         self.optimizer = optimizer
         self.criterion = criterion
@@ -51,12 +51,14 @@ class Trainer:
             loss_meter.update(loss.to('cpu').item())
             # Accuracy calculation
             _, predicted = torch.max(logit.to('cpu'), 1)
+            label = label.to('cpu')
             hit_rate = float(predicted.eq(label).sum()) / float(len(label))
             acc_meter.update(hit_rate, n=len(label))
         print(f"[{epoch} epoch Validation]: loss : {loss_meter.avg}, acc : {acc_meter.avg}\n")
 
     def on_train_start(self):
         self.model.train()
+        # self.validate(0)
 
     def on_epoch_start(self):
         self.model.train()

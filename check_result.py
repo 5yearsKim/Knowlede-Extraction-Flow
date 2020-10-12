@@ -7,7 +7,7 @@ from config import CLS_CONFIG as Ccfg
 
 prior = torch.distributions.Normal(0, 1)
 # dataset for inference
-dataset = PriorDataset(prior, 32, (Ccfg["NC"], Ccfg["IM_SIZE"], Ccfg["IM_SIZE"]), Ccfg["N_CLASS"], temp=0.1)
+dataset = PriorDataset(prior, 32, (Ccfg["NC"], Ccfg["IM_SIZE"], Ccfg["IM_SIZE"]), Ccfg["N_CLASS"], temp=1)
 dataloader = torch.utils.data.DataLoader(dataset, batch_size=16)
 
 
