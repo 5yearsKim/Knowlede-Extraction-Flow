@@ -28,19 +28,25 @@ dfs_freeze(extractor.classifier)
 optimizer = torch.optim.Adam(extractor.flow.parameters(), Fcfg["LR"], weight_decay=Fcfg["WD"])
 
 # dataloader setting
-trainset = PriorDataset(prior, Fcfg["NUM_SAMPLE"], (Ccfg["NC"], Ccfg["IM_SIZE"], Ccfg["IM_SIZE"]), Ccfg["N_CLASS"])
-devset = PriorDataset(prior, 200, (Ccfg["NC"], Ccfg["IM_SIZE"], Ccfg["IM_SIZE"]), Ccfg["N_CLASS"])
+trainset = PriorDataset(Fcfg["NUM_SAMPLE"], (Ccfg["NC"], Ccfg["IM_SIZE"], Ccfg["IM_SIZE"]), Ccfg["N_CLASS"])
+devset = PriorDataset(200, (Ccfg["NC"], Ccfg["IM_SIZE"], Ccfg["IM_SIZE"]), Ccfg["N_CLASS"])
 
-train_loader = torch.utils.data.DataLoader(trainset, batch_size=Fcfg["BATCH_SIZE"], shuffle=True)
-dev_loader = torch.utils.data.DataLoader(devset, batch_size=Fcfg["BATCH_SIZE"], shuffle=True)
+train_loader = torch.utils.data.DataLoader(trainset, batch_size=Fcfg["BATCH_SIZE"])
+dev_loader = torch.utils.data.DataLoader(devset, batch_size=Fcfg["BATCH_SIZE"])
 
 transform = transforms.Compose([
     transforms.Resize(32),
     transforms.ToTensor()
 ])
-aidedset = torchvision.datasets.MNIST('./data', train=True, download=True, transform=transform)
+
+if Ccfg["TYPE"] == "DIGIT":
+    aidedset = torchvision.datasets.MNIST('./data', train=True, download=True, transform=transform)
+elif Ccfg["TYPE"] == "FASHION":
+    aidedset = torchvision.datasets.FashionMNIST('./data', train=True, download=True, transform=transform)
+
 aidedset, _ = torch.utils.data.dataset.random_split(aidedset, [Fcfg["NUM_AIDED_SAMPLE"], len(aidedset) - Fcfg["NUM_AIDED_SAMPLE"] ])
-aidedloader = torch.utils.data.DataLoader(aidedset, batch_size=Fcfg["AIDED_BATCH_SIZE"], shuffle=True)
+aidedloader = torch.utils.data.DataLoader(aidedset, batch_size=Fcfg["AIDED_BATCH_SIZE"])
+
 
 # train model
 trainer = AidedExtractorTrainer(extractor, optimizer, train_loader, dev_loader, aidedloader, \

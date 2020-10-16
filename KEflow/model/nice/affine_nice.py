@@ -1,6 +1,8 @@
 import torch
 import torch.nn as nn
 
+from KEflow.model.utils import dequantize_to_logit
+
 """Affine coupling layer.
 """
 class Coupling(nn.Module):
@@ -67,32 +69,22 @@ class Coupling(nn.Module):
 """NICE main model.
 """
 class AffineNICE(nn.Module):
-    def __init__(self, prior, coupling, 
-        in_out_dim, cond_dim, mid_dim, hidden, mask_config=0):
+    def __init__(self, nc, im_size, coupling, cond_dim, mid_dim, hidden, mask_config=0):
         super(AffineNICE, self).__init__()
-        self.prior = prior
-        self.in_out_dim = in_out_dim
+        self.nc = nc
+        self.im_size = im_size
+        self.prior = torch.distributions.Normal(0, 1)
+        self.in_out_dim = nc*im_size*im_size
 
         self.coupling = nn.ModuleList([
-            Coupling(in_out_dim=in_out_dim, 
+            Coupling(in_out_dim=self.in_out_dim, 
                      cond_dim= cond_dim, 
                      mid_dim=mid_dim, 
                      hidden=hidden, 
                      mask_config=(mask_config+i)%2) \
             for i in range(coupling)])
 
-        # for m in self.modules():
-        #     if isinstance(m, nn.Linear):
-        #         m.weight.data.uniform_(-0.04, 0.04)
-        #         m.bias.data.fill_(0.)
-
     def g(self, z, cond):
-        """Transformation g: Z -> X (inverse of f).
-        Args:
-            z: tensor in latent space Z.
-        Returns:
-            transformed tensor in data space X.
-        """
         log_det_J = 0
         for i in reversed(range(len(self.coupling))):
             z, log_scale = self.coupling[i](z, cond, reverse=True)
@@ -100,12 +92,6 @@ class AffineNICE(nn.Module):
         return z, log_det_J
 
     def f(self, x, cond):
-        """Transformation f: X -> Z (inverse of g).
-        Args:
-            x: tensor in data space X.
-        Returns:
-            transformed tensor in latent space Z.
-        """
         log_det_J = 0
         for i in range(len(self.coupling)):
             x, log_scale = self.coupling[i](x, cond)
@@ -113,34 +99,31 @@ class AffineNICE(nn.Module):
         return x, log_det_J
 
     def log_prob(self, x, cond):
-        """Computes data log-likelihood.
-        (See Section 3.3 in the NICE paper.)
-        Args:
-            x: input minibatch.
-        Returns:
-            log-likelihood of input.
-        """
+        x = image_to_vector(dequantize_to_logit(x))
         z, log_det_J = self.f(x, cond)
         log_ll = torch.sum(self.prior.log_prob(z), dim=1)
         return log_ll + log_det_J
 
-    def sample(self, cond):
-        """Generates samples.
-        Args:
-            size: number of samples to generate.
-        Returns:
-            samples from the data space X.
-        """
-        size = cond.size(0)
-        z = self.prior.sample((size, self.in_out_dim))
-        return self.g(z, cond)
 
     def forward(self, x, cond, reverse=False):
         if reverse:
-            return self.g(x, cond)
+            x = self.image_to_vector(x)
+            x, log_det_J = self.g(x, cond)
+            x = self.image_to_vector(x, reverse=True)
+            return torch.sigmoid(x), log_det_J
         else:
-            return self.f(x, cond)
+            x = self.image_to_vector(dequantize_to_logit(x))
+            x, log_det_J = self.f(x, cond)
+            x = self.image_to_vector(x, reverse=True)
+            return x, log_det_J
 
+    def image_to_vector(self, x, reverse=False):
+        if reverse:
+            return x.view(x.size(0), self.nc, self.im_size, self.im_size)
+        else:
+            return x.view(x.size(0), -1) 
+
+        
 
 
 

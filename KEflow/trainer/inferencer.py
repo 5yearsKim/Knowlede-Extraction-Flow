@@ -10,10 +10,14 @@ class Inferencer:
 
     def inference(self):
         z, label = next(iter(self.dataloader))
-        z = z.view(z.size(0), -1)
-        z, _label = z, to_one_hot(label, self.num_class)
-        x, _ = self.model(z, _label)
-        return torch.sigmoid(x.view(-1, 1, 32, 32)), label
+        _label = to_one_hot(label, self.num_class)
+        x, _ = self.model(z, _label, reverse=True)
+        return x, label
 
     def save_pic(self, x, path):
         torchvision.utils.save_image(x, path)
+
+    def amplify(self, x):
+        amp = 1.4
+        x = torch.clamp(x * amp - (amp-1) , 0, 1)
+        return x

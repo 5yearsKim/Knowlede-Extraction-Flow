@@ -68,12 +68,11 @@ class Trainer:
             
     def save(self, save_path):
         torch.save({
-            'model_state_dict': self.model.state_dict(),
-            'optimizer': self.optimizer.state_dict()
+            'model_state': self.model.state_dict(),
             }, save_path)
     
     def load(self, load_path):
         save_dict = torch.load(load_path)
-        self.model.load_state_dict(save_dict['model_state_dict'])
+        self.model.load_state_dict(save_dict['model_state'])
 
         
