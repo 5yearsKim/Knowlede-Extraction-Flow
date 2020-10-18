@@ -1,6 +1,6 @@
 import torch
 import torchvision
-from torchvision import transforms
+from dataloader import prepare_data
 from dataloader import PriorDataset
 from KEflow.trainer.utils import dfs_freeze
 from KEflow.model import BasicCNN, LeNet5, AffineNICE, Glow, Extractor
@@ -22,7 +22,7 @@ elif TYPE == "GLOW":
     flow = Glow(Fcfg["IN_CHANNELS"], Fcfg["MID_CHANNELS"], Fcfg["COND_DIM"], \
                     Fcfg["NUM_LEVELS"], Fcfg["NUM_STEPS"] )
 
-classifier = LeNet5(Ccfg["NC"], Ccfg["IM_SIZE"], Ccfg["N_FILTER"] )
+classifier = BasicCNN(Ccfg["NC"], Ccfg["IM_SIZE"], Ccfg["N_FILTER"] )
 
 state_dict = torch.load("ckpts/KEflow/classifier.pt")
 classifier.load_state_dict(state_dict["model_state"])
@@ -37,23 +37,13 @@ optimizer = torch.optim.Adam(extractor.flow.parameters(), Fcfg["LR"], weight_dec
 
 # dataloader setting
 trainset = PriorDataset(Fcfg["NUM_SAMPLE"], (Ccfg["NC"], Ccfg["IM_SIZE"], Ccfg["IM_SIZE"]), Ccfg["N_CLASS"])
-devset = PriorDataset(200, (Ccfg["NC"], Ccfg["IM_SIZE"], Ccfg["IM_SIZE"]), Ccfg["N_CLASS"])
+devset = PriorDataset(500, (Ccfg["NC"], Ccfg["IM_SIZE"], Ccfg["IM_SIZE"]), Ccfg["N_CLASS"])
 
 train_loader = torch.utils.data.DataLoader(trainset, batch_size=Fcfg["BATCH_SIZE"])
 dev_loader = torch.utils.data.DataLoader(devset, batch_size=Fcfg["BATCH_SIZE"])
 
-transform = transforms.Compose([
-    transforms.Resize(32),
-    transforms.ToTensor()
-])
-
-if Ccfg["TYPE"] == "DIGIT":
-    aidedset = torchvision.datasets.MNIST('./data', train=True, download=True, transform=transform)
-elif Ccfg["TYPE"] == "FASHION":
-    aidedset = torchvision.datasets.FashionMNIST('./data', train=True, download=True, transform=transform)
-
-aidedset, _ = torch.utils.data.dataset.random_split(aidedset, [Fcfg["NUM_AIDED_SAMPLE"], len(aidedset) - Fcfg["NUM_AIDED_SAMPLE"] ])
-aidedloader = torch.utils.data.DataLoader(aidedset, batch_size=Fcfg["AIDED_BATCH_SIZE"])
+_, aidedset = prepare_data('./data', Ccfg["TYPE"])
+aided_loader = torch.utils.data.DataLoader(aidedset, batch_size=Fcfg["AIDED_BATCH_SIZE"])
 
 
 # train model

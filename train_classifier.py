@@ -1,16 +1,13 @@
 import torch
 from torch import nn
-import torchvision
-from torchvision import transforms
+from dataloader import prepare_data
 from KEflow.model import BasicCNN, LeNet5
 from KEflow.trainer import Trainer
 from KEflow.config import CLS_CONFIG as Ccfg
 
 
-
-
 """ dataloader """
-
+trainset, devset = prepare_data("./data", Ccfg["TYPE"])
 trainloader = torch.utils.data.DataLoader(trainset, batch_size=Ccfg["BATCH_SIZE"])
 devloader = torch.utils.data.DataLoader(devset, batch_size=Ccfg["BATCH_SIZE"])
 

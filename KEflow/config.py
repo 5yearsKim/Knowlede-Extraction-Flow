@@ -8,7 +8,7 @@ CLS_CONFIG = {
     # train_config
     "BATCH_SIZE":32,
     "LR": 5e-4,
-    "WD": 1e-5,
+    "WD": 1e-3,
     "EPOCHS": 10,
     "PRINT_FREQ":500,
     "VAL_FREQ": 1,
@@ -30,16 +30,16 @@ NICE_CONFIG = {
     "MID_DIM": 1024,
     "HIDDEN":2,
     # Extractor config
-    "ALPHA":0.04,
-    "BETA": 2, 
+    "ALPHA":0.01,
+    "BETA": 1, 
     # train config
-    "LR":5e-4,
+    "LR":5e-5,
     "WD":1e-4,
     "SMOOTHE":0.01   ,
     "BATCH_SIZE":64,
     "AIDED_BATCH_SIZE":16,
-    "EPOCHS":20,
-    "PRINT_FREQ":250,
+    "EPOCHS":10,
+    "PRINT_FREQ":100,
     "VAL_FREQ":1
 }
 
@@ -55,15 +55,15 @@ GLOW_CONFIG = {
     "NUM_LEVELS":3,
     "NUM_STEPS":8,
     # extractor config
-    "ALPHA" :0.04,   
-    "BETA" :2,
+    "ALPHA" :0.01,   
+    "BETA" :1,
     # train config
-    "LR":5e-4,
+    "LR":1e-5,
     "WD":1e-4,
     "SMOOTHE":0.01   ,
     "BATCH_SIZE":64,
     "AIDED_BATCH_SIZE":8,
-    "EPOCHS":20,
+    "EPOCHS":10,
     "PRINT_FREQ":10,
     "VAL_FREQ":1
 }
