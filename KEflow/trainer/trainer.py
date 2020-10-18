@@ -61,7 +61,8 @@ class Trainer:
         print(f"[{epoch} epoch Validation]: loss : {loss_meter.avg}, acc : {acc_meter.avg}\n")
         if acc_meter.avg > self.val_best:
             path = os.path.join(self.best_save_path, "best.pt")
-            self.save(path) 
+            self.save(path)
+            print("saving BEST..") 
 
     def on_train_start(self):
         self.model.train()

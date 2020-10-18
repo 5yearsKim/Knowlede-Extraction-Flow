@@ -18,6 +18,7 @@ class PriorDataset(torch.utils.data.Dataset):
         return data, label
 
 
+
 if __name__ == "__main__":
     # dset = ToyDataset(100)
     # print(dset[0])

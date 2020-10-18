@@ -32,6 +32,7 @@ class ExtractorTrainer(Trainer):
         if acc_meter.avg > self.val_best:
             path = os.path.join(self.best_save_path, "best.pt")
             self.save(path) 
+            print("saving BEST..")
 
 
 

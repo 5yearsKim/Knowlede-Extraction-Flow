@@ -7,19 +7,9 @@ from KEflow.trainer import Trainer
 from KEflow.config import CLS_CONFIG as Ccfg
 
 
-""" dataloader """
-transform = transforms.Compose([
-    transforms.Resize(32),
-    transforms.ToTensor(),
-    transforms.Normalize((0.1307,), (0.3081,))
-])
 
-if Ccfg["TYPE"] == "DIGIT":
-    trainset = torchvision.datasets.MNIST('./data', train=True, download=True, transform=transform)
-    devset = torchvision.datasets.MNIST('./data', train=False, download=True, transform=transform)
-elif Ccfg["TYPE"] == "FASHION":
-    trainset = torchvision.datasets.FashionMNIST('./data', train=True, download=True, transform=transform)
-    devset = torchvision.datasets.FashionMNIST('./data', train=False, download=True, transform=transform)
+
+""" dataloader """
 
 trainloader = torch.utils.data.DataLoader(trainset, batch_size=Ccfg["BATCH_SIZE"])
 devloader = torch.utils.data.DataLoader(devset, batch_size=Ccfg["BATCH_SIZE"])

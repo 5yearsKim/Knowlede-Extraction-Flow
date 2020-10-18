@@ -3,7 +3,7 @@ from torch import nn
 
 class BasicCNN(nn.Module):
     def __init__(self, nc=1, im_size=32, n_filter=16, n_class=10 ):
-        super(Classifier, self).__init__()
+        super(BasicCNN, self).__init__()
         self.layer_stack = torch.nn.Sequential( 
             nn.Conv2d(nc, n_filter, 3, padding=1),
             nn.LeakyReLU(),
