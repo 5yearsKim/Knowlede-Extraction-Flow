@@ -5,11 +5,13 @@ from KEflow.model.utils import label_smoothe, img_reg_loss
 
 
 class Extractor(nn.Module):
-    def __init__(self, flow, classifier):
+    def __init__(self, flow, classifier, alpha=0.04, beta=2.):
         super(Extractor, self).__init__()
         self.flow = flow
         self.classifier = classifier
         self.LogSoftmax = nn.LogSoftmax(dim=1)
+        self.alpha = float(alpha)
+        self.beta = float(beta)
 
     def forward(self, x, cond, smoothing=0.):
         y, log_det_J = self.flow(x, cond, reverse=True) 
@@ -21,7 +23,7 @@ class Extractor(nn.Module):
         bs, cond_dim = cond.size(0), cond.size(1)
         log_ll = torch.bmm(confidence.view(bs, 1, cond_dim), cond.view(bs, cond_dim, 1)).view(bs)
         # print(log_det_J, log_ll)
-        return 1* log_det_J + 40*log_ll - 100 * reg
+        return log_ll  + self.alpha * log_det_J - self.beta * reg
 
     def get_acc(self, x, cond):
         y, log_det_J = self.flow(x, cond, reverse=True) 

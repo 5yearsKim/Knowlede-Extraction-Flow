@@ -1,9 +1,10 @@
 import torch
 from torch import nn
+import os
 from .utils import AverageMeter, to_one_hot
 
 class Trainer:
-    def __init__(self, model, optimizer, criterion, train_loader, dev_loader):
+    def __init__(self, model, optimizer, criterion, train_loader, dev_loader, best_save_path="ckpts/"):
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         # self.device = torch.device('cpu')
         self.model = model.to(self.device)
@@ -11,6 +12,8 @@ class Trainer:
         self.criterion = criterion
         self.train_loader = train_loader
         self.dev_loader = dev_loader
+        self.val_best = 0.
+        self.best_save_path = best_save_path
 
     def train(self, epochs, print_freq=10, val_freq=1):
         self.on_train_start()
@@ -24,9 +27,10 @@ class Trainer:
                 if i%print_freq == 0:
                     print(f'iter {i} : loss = {loss_meter.avg}')
             print(f"*epoch {epoch}: loss = {loss_meter.avg}")
+            self.on_epoch_end()
             if i%val_freq ==0:
                 with torch.no_grad():
-                    self.validate(epoch)
+                    val_best = self.validate(epoch)
 
     def train_step(self, x, label, loss_meter):
         x, label = self.preprocess(x, label)
@@ -55,6 +59,9 @@ class Trainer:
             hit_rate = float(predicted.eq(label).sum()) / float(len(label))
             acc_meter.update(hit_rate, n=len(label))
         print(f"[{epoch} epoch Validation]: loss : {loss_meter.avg}, acc : {acc_meter.avg}\n")
+        if acc_meter.avg > self.val_best:
+            path = os.path.join(self.best_save_path, "best.pt")
+            self.save(path) 
 
     def on_train_start(self):
         self.model.train()
@@ -62,7 +69,10 @@ class Trainer:
 
     def on_epoch_start(self):
         self.model.train()
-
+    
+    def on_epoch_end(self):
+        pass
+    
     def preprocess(self, x, label):
         return x, label
             

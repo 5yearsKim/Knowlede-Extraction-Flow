@@ -1,6 +1,6 @@
 import torch
 from dataloader import PriorDataset
-from KEflow.model import AffineNICE
+from KEflow.model import AffineNICE, Glow
 from KEflow.trainer import Inferencer
 from KEflow.config import CLS_CONFIG as Ccfg
 from KEflow.config import TYPE
@@ -21,7 +21,7 @@ if TYPE == "NICE":
     flow = AffineNICE(Ccfg["NC"], Ccfg["IM_SIZE"], Fcfg["COUPLING"], Fcfg["COND_DIM"], \
                         Fcfg["MID_DIM"], Fcfg["HIDDEN"] )
 elif TYPE == "GLOW":
-    flow = Glow(Fcfg["IN_CHANNELS"], Fcfg["MID_CHANNELS"], Fcfg["COND_CHANNELS"], \
+    flow = Glow(Fcfg["IN_CHANNELS"], Fcfg["MID_CHANNELS"], Fcfg["COND_DIM"], \
                     Fcfg["NUM_LEVELS"], Fcfg["NUM_STEPS"] )
 
 state_dict = torch.load("ckpts/KEflow/extractor.pt")

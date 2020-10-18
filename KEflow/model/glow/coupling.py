@@ -58,10 +58,14 @@ class NN(nn.Module):
                                  kernel_size=3, padding=1, bias=False)
         nn.init.normal_(self.in_conv.weight, 0., 0.05)
 
-        self.mid_norm = norm_fn(mid_channels)
-        self.mid_conv = nn.Conv2d(mid_channels, mid_channels,
-                                  kernel_size=1, padding=0, bias=True)
-        nn.init.normal_(self.mid_conv.weight, 0., 0.05)
+        mid_layers = []
+        for i in range(2):
+            mid_layers += [norm_fn(mid_channels),
+                           nn.ReLU(),
+                           nn.Conv2d(mid_channels, mid_channels,
+                                  kernel_size=1, padding=0, bias=True),
+                          ]   
+        self.mid_layers = nn.Sequential( *mid_layers )
 
         self.out_norm = norm_fn(mid_channels)
         self.out_conv = nn.Conv2d(mid_channels, out_channels,
@@ -75,10 +79,7 @@ class NN(nn.Module):
 
         x = torch.cat((x, cond), dim=1)
         x = self.in_conv(x)
-
-        x = self.mid_norm(x)
-        x = F.relu(x)
-        x = self.mid_conv(x)
+        x = self.mid_layers(x)
 
         x = self.out_norm(x)
         x = F.relu(x)

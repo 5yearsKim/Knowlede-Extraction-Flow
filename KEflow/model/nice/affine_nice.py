@@ -99,7 +99,7 @@ class AffineNICE(nn.Module):
         return x, log_det_J
 
     def log_prob(self, x, cond):
-        x = image_to_vector(dequantize_to_logit(x))
+        x = self.image_to_vector(dequantize_to_logit(x))
         z, log_det_J = self.f(x, cond)
         log_ll = torch.sum(self.prior.log_prob(z), dim=1)
         return log_ll + log_det_J

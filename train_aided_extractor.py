@@ -1,25 +1,33 @@
 import torch
 import torchvision
 from torchvision import transforms
-from model import Classifier, AffineNICE, Extractor
-from trainer.utils import dfs_freeze
-from trainer import AidedExtractorTrainer
 from dataloader import PriorDataset
-from config import FLOW_CONFIG as Fcfg
-from config import CLS_CONFIG as Ccfg
-
-torch.manual_seed(0)
-torch.cuda.manual_seed_all(0)
-prior = torch.distributions.Normal( torch.tensor(0.), torch.tensor(1.))
+from KEflow.trainer.utils import dfs_freeze
+from KEflow.model import BasicCNN, LeNet5, AffineNICE, Glow, Extractor
+from KEflow.trainer import AidedExtractorTrainer
+from KEflow.config import CLS_CONFIG as Ccfg
+from KEflow.config import TYPE
+if TYPE == "NICE":
+    from KEflow.config import NICE_CONFIG as Fcfg
+elif TYPE == "GLOW":
+    from KEflow.config import GLOW_CONFIG as Fcfg
+else:
+    raise ValueError()
 
 # define models / load classifier
-flow = AffineNICE(prior, Fcfg["COUPLING"], Fcfg["IN_OUT_DIM"], Fcfg["COND_DIM"], Fcfg["MID_DIM"], Fcfg["HIDDEN"] )
-classifier = Classifier(Ccfg["NC"], Ccfg["IM_SIZE"], Ccfg["N_FILTER"] )
+if TYPE == "NICE":
+    flow = AffineNICE(Ccfg["NC"], Ccfg["IM_SIZE"], Fcfg["COUPLING"], Fcfg["COND_DIM"], \
+                        Fcfg["MID_DIM"], Fcfg["HIDDEN"] )
+elif TYPE == "GLOW":
+    flow = Glow(Fcfg["IN_CHANNELS"], Fcfg["MID_CHANNELS"], Fcfg["COND_DIM"], \
+                    Fcfg["NUM_LEVELS"], Fcfg["NUM_STEPS"] )
 
-state_dict = torch.load("ckpts/classifier.pt")
-classifier.load_state_dict(state_dict["model_state_dict"])
+classifier = LeNet5(Ccfg["NC"], Ccfg["IM_SIZE"], Ccfg["N_FILTER"] )
 
-extractor = Extractor(flow, classifier)
+state_dict = torch.load("ckpts/KEflow/classifier.pt")
+classifier.load_state_dict(state_dict["model_state"])
+
+extractor = Extractor(flow, classifier, Fcfg["ALPHA"], Fcfg["BETA"])
 
 # freeze classifier part
 dfs_freeze(extractor.classifier)
@@ -50,8 +58,8 @@ aidedloader = torch.utils.data.DataLoader(aidedset, batch_size=Fcfg["AIDED_BATCH
 
 # train model
 trainer = AidedExtractorTrainer(extractor, optimizer, train_loader, dev_loader, aidedloader, \
-                                num_class=Fcfg["COND_DIM"], label_smoothe=Fcfg["SMOOTHE"])
-trainer.load("ckpts/extractor.pt")
+                                num_class=Fcfg["COND_DIM"], label_smoothe=Fcfg["SMOOTHE"], best_save_path="ckpts/KEflow")
+# trainer.load("ckpts/extractor.pt")
 trainer.train(Fcfg["EPOCHS"], Fcfg["PRINT_FREQ"], Fcfg["VAL_FREQ"])
 
 # save model

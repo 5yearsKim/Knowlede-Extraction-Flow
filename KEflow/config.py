@@ -1,5 +1,5 @@
 # TYPE in ["GLOW", "NICE"]
-TYPE = "GLOW"
+TYPE = "NICE"
 
 '''classifier config'''
 CLS_CONFIG = {
@@ -7,9 +7,9 @@ CLS_CONFIG = {
     "TYPE": "DIGIT",
     # train_config
     "BATCH_SIZE":32,
-    "LR": 1e-4,
+    "LR": 5e-4,
     "WD": 1e-5,
-    "EPOCHS": 2,
+    "EPOCHS": 10,
     "PRINT_FREQ":500,
     "VAL_FREQ": 1,
     # model config
@@ -23,20 +23,23 @@ CLS_CONFIG = {
 NICE_CONFIG = {
     # Dataset
     "NUM_SAMPLE" : 10240,
-    "NUM_AIDED_SAMPLE":20,
+    "NUM_AIDED_SAMPLE":2048,
     # model config
     "COUPLING": 12,
     "COND_DIM": 10,
     "MID_DIM": 1024,
-    "HIDDEN":2, 
+    "HIDDEN":2,
+    # Extractor config
+    "ALPHA":0.04,
+    "BETA": 2, 
     # train config
-    "LR":3e-5,
+    "LR":5e-4,
     "WD":1e-4,
     "SMOOTHE":0.01   ,
-    "BATCH_SIZE":32,
-    "AIDED_BATCH_SIZE":8,
-    "EPOCHS":5,
-    "PRINT_FREQ":100,
+    "BATCH_SIZE":64,
+    "AIDED_BATCH_SIZE":16,
+    "EPOCHS":20,
+    "PRINT_FREQ":250,
     "VAL_FREQ":1
 }
 
@@ -51,13 +54,16 @@ GLOW_CONFIG = {
     "COND_DIM":10,
     "NUM_LEVELS":3,
     "NUM_STEPS":8,
+    # extractor config
+    "ALPHA" :0.04,   
+    "BETA" :2,
     # train config
-    "LR":5e-5,
+    "LR":5e-4,
     "WD":1e-4,
     "SMOOTHE":0.01   ,
-    "BATCH_SIZE":32,
+    "BATCH_SIZE":64,
     "AIDED_BATCH_SIZE":8,
-    "EPOCHS":15,
+    "EPOCHS":20,
     "PRINT_FREQ":10,
     "VAL_FREQ":1
 }

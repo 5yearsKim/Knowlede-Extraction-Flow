@@ -9,7 +9,7 @@ class Inferencer:
         self.num_class=num_class
 
     def inference(self):
-        z, label = next(iter(self.dataloader))
+        label = torch.arange(0, 10)
         _label = to_one_hot(label, self.num_class)
         x, _ = self.model(z, _label, reverse=True)
         return x, label

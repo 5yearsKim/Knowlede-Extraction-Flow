@@ -32,7 +32,7 @@ optimizer = torch.optim.Adam(model.parameters(), lr=Ccfg["LR"], weight_decay=Ccf
 criterion = nn.CrossEntropyLoss()
 
 """ train """
-trainer = Trainer(model, optimizer, criterion, trainloader, devloader)
+trainer = Trainer(model, optimizer, criterion, trainloader, devloader, best_save_path="ckpts/KEflow/")
 # trainer.load("ckpts/classifier.pt")
 trainer.train(epochs=Ccfg["EPOCHS"], print_freq=Ccfg["PRINT_FREQ"], val_freq=Ccfg["VAL_FREQ"])
 

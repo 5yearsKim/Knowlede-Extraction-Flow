@@ -1,12 +1,13 @@
 import torch
+import os
 from .trainer import Trainer
 from .utils import to_one_hot, AverageMeter
 
 class ExtractorTrainer(Trainer):
-    def __init__(self, model, optimizer, train_loader, dev_loader, num_class=2, label_smoothe=0.):
+    def __init__(self, model, optimizer, train_loader, dev_loader, num_class=2, label_smoothe=0., best_save_path="ckpts/"):
         self.num_class = num_class
         criterion=None
-        super(ExtractorTrainer, self).__init__(model, optimizer, criterion, train_loader, dev_loader)
+        super(ExtractorTrainer, self).__init__(model, optimizer, criterion, train_loader, dev_loader, best_save_path)
         self.label_smoothe = label_smoothe
 
     def train_step(self, x, label, loss_meter):
@@ -28,6 +29,11 @@ class ExtractorTrainer(Trainer):
                 acc = self.model.get_acc(x, label)
                 acc_meter.update(acc, x.size(0))
             print(f"[{epoch} epoch Validation]: acc : {acc_meter.avg}\n")
+        if acc_meter.avg > self.val_best:
+            path = os.path.join(self.best_save_path, "best.pt")
+            self.save(path) 
+
+
 
     def save(self, save_path):
         torch.save({
@@ -42,8 +48,8 @@ class ExtractorTrainer(Trainer):
 
            
 class AidedExtractorTrainer(ExtractorTrainer):
-    def __init__(self, model, optimizer, train_loader, dev_loader, aided_loader, num_class=2, label_smoothe=0.):
-        super(AidedExtractorTrainer, self).__init__(model, optimizer, train_loader, dev_loader, num_class, label_smoothe)
+    def __init__(self, model, optimizer, train_loader, dev_loader, aided_loader, num_class=2, label_smoothe=0., best_save_path="ckpts"):
+        super(AidedExtractorTrainer, self).__init__(model, optimizer, train_loader, dev_loader, num_class, label_smoothe, best_save_path)
         self.aided_loader = aided_loader
 
     def aided_train(self):
@@ -62,10 +68,12 @@ class AidedExtractorTrainer(ExtractorTrainer):
             #     print(f"loss = {loss_meter.avg}")
         print(f"##aided loss : {loss_meter.avg}")
     
-    def on_epoch_start(self):
+    def on_epoch_end(self):
         self.model.flow.train()
+
+    def on_epoch_end(self):
         self.aided_train()
-    
+         
     # def train_step(self, x, label, loss_meter ):
     #     pass
    

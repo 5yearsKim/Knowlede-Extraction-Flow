@@ -26,7 +26,7 @@ state_dict = torch.load("ckpts/KEflow/classifier.pt")
 # state_dict = torch.load("ckpts/from_kegnet/mnist.pth.tar")
 classifier.load_state_dict(state_dict["model_state"])
 
-extractor = Extractor(flow, classifier)
+extractor = Extractor(flow, classifier, Fcfg["ALPHA"], Fcfg["BETA"])
 
 # freeze classifier part
 dfs_freeze(extractor.classifier)
@@ -42,7 +42,8 @@ train_loader = torch.utils.data.DataLoader(trainset, batch_size=Fcfg["BATCH_SIZE
 dev_loader = torch.utils.data.DataLoader(devset, batch_size=Fcfg["BATCH_SIZE"])
 
 # train model
-trainer = ExtractorTrainer(extractor, optimizer, train_loader, dev_loader, num_class=Fcfg["COND_DIM"], label_smoothe=Fcfg["SMOOTHE"])
+trainer = ExtractorTrainer(extractor, optimizer, train_loader, dev_loader,\
+                             num_class=Fcfg["COND_DIM"], label_smoothe=Fcfg["SMOOTHE"], best_save_path="ckpts/KEflow")
 
 # trainer.load("ckpts/extractor.pt")
 trainer.train(Fcfg["EPOCHS"], Fcfg["PRINT_FREQ"], Fcfg["VAL_FREQ"])
