@@ -1,4 +1,4 @@
-# CLSTYPE in ["BASICCNN", "LENET5", "RESNET"]
+# CLSTYPE in ["BASICCNN", "LENET", "RESNET"]
 TYPE_CLS = "BASICCNN"
 # TYPE in ["GLOW", "NICE"]
 TYPE_FLOW = "GLOW"
@@ -31,8 +31,8 @@ NICE_CONFIG = {
     "MID_DIM": 1024,
     "HIDDEN":2,
     # Extractor config
-    "ALPHA":0.04,
-    "BETA": 2, 
+    "ALPHA":0.01,
+    "BETA": 1, 
     # train config
     "LR":5e-5,
     "WD":1e-4,
@@ -56,10 +56,10 @@ GLOW_CONFIG = {
     "NUM_LEVELS":3,
     "NUM_STEPS":8,
     # extractor config
-    "ALPHA" :0.04,   
-    "BETA" :2,
+    "ALPHA" :0.01,   
+    "BETA" :1,
     # train config
-    "LR":2e-5,
+    "LR":1e-5,
     "WD":1e-4,
     "SMOOTHE":0.01   ,
     "BATCH_SIZE":64,

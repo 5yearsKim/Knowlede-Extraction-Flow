@@ -30,6 +30,7 @@ class ExtractorTrainer(Trainer):
                 acc_meter.update(acc, x.size(0))
             print(f"[{epoch} epoch Validation]: acc : {acc_meter.avg}\n")
         if acc_meter.avg > self.val_best:
+            self.val_best = acc_meter.avg
             path = os.path.join(self.best_save_path, "best.pt")
             self.save(path) 
             print("saving BEST..")
