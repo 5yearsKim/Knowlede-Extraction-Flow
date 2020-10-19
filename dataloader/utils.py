@@ -14,9 +14,9 @@ def prepare_data(root, data_type):
         transform = transforms.Compose([
             transforms.Resize(32),
             transforms.ToTensor(),
-            transforms.Normalize(((0.2856,), (0.3385,))
+            transforms.Normalize((0.2856,), (0.3385,))
         ])
-        trainset = torchvision.datasets.FashionMNIST(root), train=True, download=True, transform=transform)
+        trainset = torchvision.datasets.FashionMNIST(root, train=True, download=True, transform=transform)
         devset = torchvision.datasets.FashionMNIST(root, train=False, download=True, transform=transform)
     elif data_type == "SVHN":
         stat = ((0.4378, 0.4439, 0.4729), (0.1980, 0.2011, 0.1971))

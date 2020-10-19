@@ -16,7 +16,7 @@ class Inferencer:
         return x, label
 
     def save_pic(self, x, path):
-        torchvision.utils.save_image(x, path)
+        torchvision.utils.save_image(x, path, nrow=10)
 
     def amplify(self, x):
         amp = 1.4

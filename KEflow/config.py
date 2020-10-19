@@ -1,5 +1,5 @@
 # TYPE in ["GLOW", "NICE"]
-TYPE = "NICE"
+TYPE = "GLOW"
 
 '''classifier config'''
 CLS_CONFIG = {
@@ -64,6 +64,6 @@ GLOW_CONFIG = {
     "BATCH_SIZE":64,
     "AIDED_BATCH_SIZE":8,
     "EPOCHS":10,
-    "PRINT_FREQ":10,
+    "PRINT_FREQ":50,
     "VAL_FREQ":1
 }
