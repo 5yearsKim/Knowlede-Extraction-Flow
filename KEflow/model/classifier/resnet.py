@@ -75,7 +75,7 @@ class ResNet(nn.Module):
     Class for a ResNet classifier.
     """
 
-    def __init__(self, num_channels, num_classes, n=2):
+    def __init__(self, num_channels, im_size, n_filter, num_classes, n=2):
         """
         Class initializer.
         """
