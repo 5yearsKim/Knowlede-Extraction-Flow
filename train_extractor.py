@@ -2,25 +2,25 @@ import torch
 from dataloader import PriorDataset
 from KEflow.trainer.utils import dfs_freeze
 from KEflow.trainer import ExtractorTrainer
-from KEflow.model import BasicCNN, LeNet5, AffineNICE, Glow, Extractor
+from KEflow.model import prepare_classifier, AffineNICE, Glow, Extractor
+from KEflow.config import TYPE_FLOW, TYPE_CLS
 from KEflow.config import CLS_CONFIG as Ccfg
-from KEflow.config import TYPE
-if TYPE == "NICE":
+if TYPE_FLOW == "NICE":
     from KEflow.config import NICE_CONFIG as Fcfg
-elif TYPE == "GLOW":
+elif TYPE_FLOW == "GLOW":
     from KEflow.config import GLOW_CONFIG as Fcfg
 else:
     raise ValueError()
 
 # define models / load classifier
-if TYPE == "NICE":
+if TYPE_FLOW == "NICE":
     flow = AffineNICE(Ccfg["NC"], Ccfg["IM_SIZE"], Fcfg["COUPLING"], Fcfg["COND_DIM"], \
                         Fcfg["MID_DIM"], Fcfg["HIDDEN"] )
-elif TYPE == "GLOW":
+elif TYPE_FLOW == "GLOW":
     flow = Glow(Fcfg["IN_CHANNELS"], Fcfg["MID_CHANNELS"], Fcfg["COND_DIM"], \
                     Fcfg["NUM_LEVELS"], Fcfg["NUM_STEPS"] )
 
-classifier = LeNet5(Ccfg["NC"], Ccfg["IM_SIZE"], Ccfg["N_FILTER"] )
+classifier = prepare_classifier(TYPE_CLS, Ccfg["NC"], Ccfg["N_CLASS"])
 
 state_dict = torch.load("ckpts/KEflow/classifier.pt")
 # state_dict = torch.load("ckpts/from_kegnet/mnist.pth.tar")

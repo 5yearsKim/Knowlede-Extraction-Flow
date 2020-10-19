@@ -1,10 +1,12 @@
+# CLSTYPE in ["BASICCNN", "LENET5", "RESNET"]
+TYPE_CLS = "BASICCNN"
 # TYPE in ["GLOW", "NICE"]
-TYPE = "GLOW"
+TYPE_FLOW = "GLOW"
+# TYPE in ["DIGIT", "FASHION", "SVHN", "CIFAR"]
+TYPE_DATA = "DIGIT"
 
 '''classifier config'''
 CLS_CONFIG = {
-    # dataset
-    "TYPE": "DIGIT",
     # train_config
     "BATCH_SIZE":32,
     "LR": 5e-4,
@@ -14,9 +16,8 @@ CLS_CONFIG = {
     "VAL_FREQ": 1,
     # model config
     "NC":1,
-    "IM_SIZE":32,
-    "N_FILTER":32,
     "N_CLASS":10,
+    "IM_SIZE":32,
 }
 
 """ NICE Extractor config """
@@ -30,8 +31,8 @@ NICE_CONFIG = {
     "MID_DIM": 1024,
     "HIDDEN":2,
     # Extractor config
-    "ALPHA":0.01,
-    "BETA": 1, 
+    "ALPHA":0.04,
+    "BETA": 2, 
     # train config
     "LR":5e-5,
     "WD":1e-4,
@@ -55,10 +56,10 @@ GLOW_CONFIG = {
     "NUM_LEVELS":3,
     "NUM_STEPS":8,
     # extractor config
-    "ALPHA" :0.01,   
-    "BETA" :1,
+    "ALPHA" :0.04,   
+    "BETA" :2,
     # train config
-    "LR":1e-5,
+    "LR":2e-5,
     "WD":1e-4,
     "SMOOTHE":0.01   ,
     "BATCH_SIZE":64,

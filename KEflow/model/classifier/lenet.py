@@ -6,18 +6,18 @@ class LeNet5(nn.Module):
     Class for a Lenet5 classifier.
     """
 
-    def __init__(self, nc=1, im_size=32, n_filter=16, n_class=10 ):
+    def __init__(self, nc=1, n_class=10 ):
         """
         Class initializer.
         """
         super(LeNet5, self).__init__()
-        self.conv1 = nn.Conv2d(1, 6, 5)
+        self.conv1 = nn.Conv2d(nc, 6, 5)
         self.max_pool1 = nn.MaxPool2d((2, 2), 2)
         self.conv2 = nn.Conv2d(6, 16, 5)
         self.max_pool2 = nn.MaxPool2d((2, 2), 2)
         self.conv3 = nn.Conv2d(16, 120, 5)
         self.fc1 = nn.Linear(120, 84)
-        self.fc2 = nn.Linear(84, 10)
+        self.fc2 = nn.Linear(84, n_class)
 
     def forward(self, x):
         """

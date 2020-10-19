@@ -75,19 +75,19 @@ class ResNet(nn.Module):
     Class for a ResNet classifier.
     """
 
-    def __init__(self, num_channels, im_size, n_filter, num_classes, n=2):
+    def __init__(self, nc, n_classes, n=2):
         """
         Class initializer.
         """
         super(ResNet, self).__init__()
-        self.conv1 = nn.Conv2d(num_channels, 16, 3, 1, 1)
+        self.conv1 = nn.Conv2d(nc, 16, 3, 1, 1)
         self.norm1 = nn.BatchNorm2d(16)
         self.relu1 = nn.ReLU(inplace=True)
         self.layers1 = self._make_layer(n, 16, 16, 1)
         self.layers2 = self._make_layer(n, 32, 16, 2)
         self.layers3 = self._make_layer(n, 64, 32, 2)
         self.avgpool = nn.AvgPool2d(8)
-        self.linear = nn.Linear(64, num_classes)
+        self.linear = nn.Linear(64, n_classes)
 
     @staticmethod
     def _make_layer(n, num_filters, channels_in, stride):
