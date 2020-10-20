@@ -27,7 +27,7 @@ def prepare_data(root, data_type):
         trainset = torchvision.datasets.SVHN(root, split='train', download=True, transform=transform)
         devset = torchvision.datasets.SVHN(root, split='test', download=True, transform=transform)
     elif data_type == "CIFAR":
-        stat =  ((0.4914, 0.4822, 0.4465), (0.247, 0.243, 0.261))
+        stat =  ((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010))
         transform = transforms.Compose([
             transforms.ToTensor(),
             transforms.Normalize(*stat)

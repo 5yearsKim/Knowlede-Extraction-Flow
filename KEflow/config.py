@@ -1,16 +1,16 @@
-# CLSTYPE in ["BASICCNN", "LENET5", "RESNET"]
-TYPE_CLS = "BASICCNN"
+# CLSTYPE in ["BASICCNN", "LENET5", "RESNET", "VGG"]
+TYPE_CLS = "VGG"
 # TYPE in ["GLOW", "NICE"]
 TYPE_FLOW = "NICE"
 # TYPE in ["DIGIT", "FASHION", "SVHN", "CIFAR"]
-TYPE_DATA = "SVHN"
+TYPE_DATA = "CIFAR"
 
 '''classifier config'''
 CLS_CONFIG = {
     # train_config
-    "BATCH_SIZE":64,
-    "LR": 2e-4,
-    "WD": 1e-3,
+    "BATCH_SIZE":1,
+    "LR": 1e-6,
+    "WD": 5e-4,
     "EPOCHS": 10,
     "PRINT_FREQ":500,
     "VAL_FREQ": 1,
@@ -28,7 +28,7 @@ NICE_CONFIG = {
     # model config
     "COUPLING": 12,
     "COND_DIM": 10,
-    "MID_DIM": 1500,
+    "MID_DIM": 1200,
     "HIDDEN":2,
     # Extractor config
     "ALPHA":0.01,
@@ -37,7 +37,7 @@ NICE_CONFIG = {
     "LR":5e-5,
     "WD":1e-4,
     "SMOOTHE":0.01,
-    "BATCH_SIZE":24,
+    "BATCH_SIZE":32,
     "AIDED_BATCH_SIZE":16,
     "EPOCHS":50,
     "PRINT_FREQ":100,

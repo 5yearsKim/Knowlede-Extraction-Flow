@@ -23,7 +23,7 @@ criterion = nn.CrossEntropyLoss()
 
 """ train """
 trainer = Trainer(model, optimizer, criterion, trainloader, devloader, best_save_path="ckpts/KEflow/")
-# trainer.load("ckpts/KEflow/classifier.pt")
+# trainer.load("ckpts/KEflow/vgg11_bn.pt")
 trainer.train(Ccfg["EPOCHS"], Ccfg["PRINT_FREQ"], Ccfg["VAL_FREQ"])
 
 """ save model """

@@ -1,6 +1,6 @@
 import torch
 from torch import nn
-from .classifier import BasicCNN, LeNet5, ResNet
+from .classifier import BasicCNN, LeNet5, ResNet, vgg11_bn
 
 def prepare_classifier(cls_type, nc, n_class):
     if cls_type == "BASICCNN":
@@ -9,6 +9,8 @@ def prepare_classifier(cls_type, nc, n_class):
         return LeNet5(nc, n_class)
     elif cls_type == "RESNET":
         return ResNet(nc, n_class)
+    elif cls_type == "VGG":
+        return vgg11_bn(pretrained=True)
     else:
         raise ValueError(f"{cls_type} not supported!")
 
@@ -35,7 +37,7 @@ def img_reg_loss(x):
     loss = (loss * 3) ** 2
     return loss.view(x.size(0), -1).mean(1)
 
-def weights_init(m, gain=0.7):
+def weights_init(m, gain=0.5):
     if isinstance(m, nn.Conv2d):
         nn.init.xavier_normal_(m.weight.data, gain=gain)
     if isinstance(m, nn.Linear):
