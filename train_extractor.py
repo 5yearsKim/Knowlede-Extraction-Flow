@@ -3,6 +3,7 @@ from dataloader import PriorDataset
 from KEflow.trainer.utils import dfs_freeze
 from KEflow.trainer import ExtractorTrainer
 from KEflow.model import prepare_classifier, AffineNICE, Glow, Extractor
+from KEflow.model.utils import weights_init
 from KEflow.config import TYPE_FLOW, TYPE_CLS
 from KEflow.config import CLS_CONFIG as Ccfg
 if TYPE_FLOW == "NICE":
@@ -16,6 +17,7 @@ else:
 if TYPE_FLOW == "NICE":
     flow = AffineNICE(Ccfg["NC"], Ccfg["IM_SIZE"], Fcfg["COUPLING"], Fcfg["COND_DIM"], \
                         Fcfg["MID_DIM"], Fcfg["HIDDEN"] )
+    # flow.apply(weights_init)
 elif TYPE_FLOW == "GLOW":
     flow = Glow(Fcfg["IN_CHANNELS"], Fcfg["MID_CHANNELS"], Fcfg["COND_DIM"], \
                     Fcfg["NUM_LEVELS"], Fcfg["NUM_STEPS"] )
@@ -28,7 +30,7 @@ classifier.load_state_dict(state_dict["model_state"])
 
 extractor = Extractor(flow, classifier, Fcfg["ALPHA"], Fcfg["BETA"])
 
-# freeze classifier part
+# freeze classifier part    
 dfs_freeze(extractor.classifier)
 
 # optimizer
@@ -45,7 +47,7 @@ dev_loader = torch.utils.data.DataLoader(devset, batch_size=Fcfg["BATCH_SIZE"])
 trainer = ExtractorTrainer(extractor, optimizer, train_loader, dev_loader,\
                              num_class=Fcfg["COND_DIM"], label_smoothe=Fcfg["SMOOTHE"], best_save_path="ckpts/KEflow")
 
-# trainer.load("ckpts/extractor.pt")
+# trainer.load("ckpts/KEflow/best.pt")
 trainer.train(Fcfg["EPOCHS"], Fcfg["PRINT_FREQ"], Fcfg["VAL_FREQ"])
 
 # save model

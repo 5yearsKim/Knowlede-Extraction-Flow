@@ -18,7 +18,7 @@ class Inferencer:
     def save_pic(self, x, path):
         torchvision.utils.save_image(x, path, nrow=10)
 
-    def amplify(self, x):
-        amp = 1.4
+    def amplify(self, x, amp=1.3):
         x = torch.clamp(x * amp - (amp-1) , 0, 1)
+        # x = torch.clamp( (x - 0.5) * amp + 0.5  , 0, 1)
         return x

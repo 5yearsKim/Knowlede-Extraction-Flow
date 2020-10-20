@@ -70,7 +70,7 @@ class AidedExtractorTrainer(ExtractorTrainer):
             #     print(f"loss = {loss_meter.avg}")
         print(f"##aided loss : {loss_meter.avg}")
     
-    def on_epoch_end(self):
+    def on_epoch_start(self):
         self.model.flow.train()
 
     def on_epoch_end(self):

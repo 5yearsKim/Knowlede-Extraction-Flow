@@ -14,7 +14,7 @@ class BasicCNN(nn.Module):
             nn.LeakyReLU(),
             nn.BatchNorm2d(n_filter),
             
-            nn.MaxPool2d((2, 2), 2)
+            nn.MaxPool2d((2, 2), 2),
 
             # B x n_filter x 16 x 16
             nn.Conv2d(n_filter, 2*n_filter, 3, padding=1),
@@ -25,7 +25,7 @@ class BasicCNN(nn.Module):
             nn.LeakyReLU(),
             nn.BatchNorm2d(2*n_filter),          
             
-            nn.MaxPool2d((2, 2), 2)
+            nn.MaxPool2d((2, 2), 2),
 
             # B x 2*n_filter x 8 x 8
             nn.Conv2d(2*n_filter, 2*n_filter, 3, padding=1),
@@ -36,7 +36,7 @@ class BasicCNN(nn.Module):
             nn.LeakyReLU(),
             nn.BatchNorm2d(2*n_filter),   
             
-            nn.MaxPool2d((2, 2), 2)
+            nn.MaxPool2d((2, 2), 2),
 
             # B x 4*n_filter x 4 x 4
             # fc layer in filter format

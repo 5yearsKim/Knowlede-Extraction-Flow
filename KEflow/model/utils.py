@@ -1,4 +1,5 @@
 import torch
+from torch import nn
 from .classifier import BasicCNN, LeNet5, ResNet
 
 def prepare_classifier(cls_type, nc, n_class):
@@ -29,7 +30,14 @@ def label_smoothe(label, smoothing=0.):
     return label
 
 def img_reg_loss(x):
+    x = x * 0.98
     loss = - x.log() - (1 - x).log() + 2 * torch.tensor(0.5).log()
     loss = (loss * 3) ** 2
     return loss.view(x.size(0), -1).mean(1)
 
+def weights_init(m, gain=0.7):
+    if isinstance(m, nn.Conv2d):
+        nn.init.xavier_normal_(m.weight.data, gain=gain)
+    if isinstance(m, nn.Linear):
+        nn.init.xavier_normal_(m.weight.data, gain=gain)
+    

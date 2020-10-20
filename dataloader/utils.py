@@ -24,16 +24,16 @@ def prepare_data(root, data_type):
             transforms.ToTensor(),
             transforms.Normalize(*stat)
         ])       
-        trainset = torchvision.datasets.FashionMNIST(root, split='train', download=True, transform=transform)
-        devset = torchvision.datasets.FashionMNIST(root, split='test', download=True, transform=transform)
+        trainset = torchvision.datasets.SVHN(root, split='train', download=True, transform=transform)
+        devset = torchvision.datasets.SVHN(root, split='test', download=True, transform=transform)
     elif data_type == "CIFAR":
         stat =  ((0.4914, 0.4822, 0.4465), (0.247, 0.243, 0.261))
         transform = transforms.Compose([
             transforms.ToTensor(),
             transforms.Normalize(*stat)
         ])
-        trainset = torchvision.datasets.FashionMNIST(root, train=True, download=True, transform=transform)
-        devset = torchvision.datasets.FashionMNIST(root, train=False, download=True, transform=transform)
+        trainset = torchvision.datasets.CIFAR10(root, train=True, download=True, transform=transform)
+        devset = torchvision.datasets.CIFAR10(root, train=False, download=True, transform=transform)
     else:
         raise ValueError(f"Dataset {data_type} not supported..")
     
