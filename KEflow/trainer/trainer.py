@@ -24,6 +24,7 @@ class Trainer:
             loss_meter.reset()
             for i, (x, label) in enumerate(self.train_loader):
                 self.train_step(x, label, loss_meter)
+                self.on_every_step(i=i)
                 if i%print_freq == 0:
                     print(f'iter {i} : loss = {loss_meter.avg}')
             print(f"*epoch {epoch}: loss = {loss_meter.avg}")
@@ -73,6 +74,9 @@ class Trainer:
         self.model.train()
     
     def on_epoch_end(self):
+        pass
+
+    def on_every_step(self, i=0):
         pass
     
     def preprocess(self, x, label):

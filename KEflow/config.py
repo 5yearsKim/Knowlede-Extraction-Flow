@@ -23,7 +23,7 @@ CLS_CONFIG = {
 """ NICE Extractor config """
 FLOW_CONFIG = {
     # Dataset
-    "NUM_SAMPLE" : 10240,
+    "NUM_SAMPLE" : 1000,
     "NUM_AIDED_SAMPLE":1024,
     # Extractor config
     "ALPHA":0.01,
@@ -33,7 +33,7 @@ FLOW_CONFIG = {
     "WD":1e-4,
     "SMOOTHE":0.01,
     "BATCH_SIZE":32,
-    "AIDED_BATCH_SIZE":16,
+    "AIDED_BATCH_SIZE":32,
     "EPOCHS":50,
     "PRINT_FREQ":100,
     "VAL_FREQ":1

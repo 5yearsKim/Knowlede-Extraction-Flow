@@ -51,33 +51,29 @@ class ExtractorTrainer(Trainer):
            
 class AidedExtractorTrainer(ExtractorTrainer):
     def __init__(self, model, optimizer, train_loader, dev_loader, aided_loader, num_class=2, label_smoothe=0., best_save_path="ckpts"):
+        def cycle(iterable):
+            while True:
+                for x in iterable:
+                    yield x
         super(AidedExtractorTrainer, self).__init__(model, optimizer, train_loader, dev_loader, num_class, label_smoothe, best_save_path)
-        self.aided_loader = aided_loader
+        self.aided_loader = iter(cycle(aided_loader))
+        self.aided_loss_meter = AverageMeter()
 
-    def aided_train(self):
-        loss_meter = AverageMeter()
-        for i, (x, label) in enumerate(self.aided_loader):
-            x, label = self.preprocess(x, label)
-            x, label = x.to(self.device), label.to(self.device)
-            self.optimizer.zero_grad()
-            log_ll = self.model.flow.log_prob(x, label)
-            loss = -torch.mean(log_ll)
-            loss.backward()
-            torch.nn.utils.clip_grad_norm_(self.model.flow.parameters(), 1.)
-            self.optimizer.step()
-            loss_meter.update(loss.item())
-            # if i % 20 == 0 :
-            #     print(f"loss = {loss_meter.avg}")
-        print(f"##aided loss : {loss_meter.avg}")
+    def on_every_step(self, i=0):
+        x, label = next(self.aided_loader)
+        x, label = self.preprocess(x, label)
+        x, label = x.to(self.device), label.to(self.device)
+        self.optimizer.zero_grad()
+        log_ll = self.model.flow.log_prob(x, label)
+        loss = -torch.mean(log_ll)
+        loss.backward()
+        torch.nn.utils.clip_grad_norm_(self.model.flow.parameters(), 1.)
+        self.optimizer.step()
+        self.aided_loss_meter.update(loss.item())
     
-    def on_epoch_start(self):
-        self.model.flow.train()
-
     def on_epoch_end(self):
-        self.aided_train()
-         
-    # def train_step(self, x, label, loss_meter ):
-    #     pass
+        print(f"aided_loss: {self.aided_loss_meter.avg}\n")
+        self.aided_loss_meter.reset()
    
     def preprocess(self, x, label):
         label = to_one_hot(label, self.num_class)
