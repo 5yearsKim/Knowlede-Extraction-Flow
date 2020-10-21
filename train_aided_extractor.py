@@ -3,25 +3,14 @@ import torchvision
 from dataloader import prepare_data
 from dataloader import PriorDataset
 from KEflow.trainer.utils import dfs_freeze
-from KEflow.model import prepare_classifier, AffineNICE, Glow, Extractor
+from KEflow.model import prepare_classifier, prepare_flow, Extractor
 from KEflow.trainer import AidedExtractorTrainer
-from KEflow.config import CLS_CONFIG as Ccfg
 from KEflow.config import TYPE_FLOW, TYPE_CLS, TYPE_DATA
-if TYPE_FLOW == "NICE":
-    from KEflow.config import NICE_CONFIG as Fcfg
-elif TYPE_FLOW == "GLOW":
-    from KEflow.config import GLOW_CONFIG as Fcfg
-else:
-    raise ValueError()
+from KEflow.config import CLS_CONFIG as Ccfg
+from KEflow.config import FLOW_CONFIG as Fcfg
 
 # define models / load classifier
-if TYPE_FLOW == "NICE":
-    flow = AffineNICE(Ccfg["NC"], Ccfg["IM_SIZE"], Fcfg["COUPLING"], Fcfg["COND_DIM"], \
-                        Fcfg["MID_DIM"], Fcfg["HIDDEN"] )
-elif TYPE_FLOW == "GLOW":
-    flow = Glow(Fcfg["IN_CHANNELS"], Fcfg["MID_CHANNELS"], Fcfg["COND_DIM"], \
-                    Fcfg["NUM_LEVELS"], Fcfg["NUM_STEPS"] )
-
+flow = prepare_flow(TYPE_FLOW, Ccfg["NC"], Ccfg["N_CLASS"])
 classifier = prepare_classifier(TYPE_CLS , Ccfg["NC"], Ccfg["N_CLASS"] )
 
 state_dict = torch.load("ckpts/KEflow/classifier.pt")
@@ -42,14 +31,14 @@ devset = PriorDataset(200, (Ccfg["NC"], Ccfg["IM_SIZE"], Ccfg["IM_SIZE"]), Ccfg[
 train_loader = torch.utils.data.DataLoader(trainset, batch_size=Fcfg["BATCH_SIZE"])
 dev_loader = torch.utils.data.DataLoader(devset, batch_size=Fcfg["BATCH_SIZE"])
 
-_, aidedset = prepare_data('./data', TYPE_DATA)
-_, aidedset = torch.utils.data.random_split(aidedset, [len(aidedset) - Fcfg["NUM_AIDED_SAMPLE"], Fcfg["NUM_AIDED_SAMPLE"]])
+aidedset, _ = prepare_data('./data', TYPE_DATA)
+aidedset, _ = torch.utils.data.random_split(aidedset, [Fcfg["NUM_AIDED_SAMPLE"], len(aidedset) - Fcfg["NUM_AIDED_SAMPLE"]])
 aided_loader = torch.utils.data.DataLoader(aidedset, batch_size=Fcfg["AIDED_BATCH_SIZE"])
 
 
 # train model
 trainer = AidedExtractorTrainer(extractor, optimizer, train_loader, dev_loader, aided_loader, \
-                                num_class=Fcfg["COND_DIM"], label_smoothe=Fcfg["SMOOTHE"], best_save_path="ckpts/KEflow")
+                                num_class=Ccfg["COND_DIM"], label_smoothe=Fcfg["SMOOTHE"], best_save_path="ckpts/KEflow")
 trainer.load("ckpts/KEflow/1000aidded.pt")
 trainer.train(Fcfg["EPOCHS"], Fcfg["PRINT_FREQ"], Fcfg["VAL_FREQ"])
 

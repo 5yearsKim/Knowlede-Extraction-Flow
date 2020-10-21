@@ -6,7 +6,7 @@ from .act_norm import ActNorm
 from .coupling import Coupling
 from .inv_conv import InvConv
 
-from KEflow.model.utils import dequantize_to_logit
+import KEflow.model.utils as utils
 
 class Glow(nn.Module):
     """Glow Model
@@ -44,7 +44,6 @@ class Glow(nn.Module):
         return x, sldj
 
     def log_prob(self, x, cond):
-        x = dequantize_to_logit(x)
         z, sldj = self.forward(x, cond)
         log_ll = self.prior.log_prob(z).sum(-1).sum(-1).sum(-1)
         return log_ll + sldj

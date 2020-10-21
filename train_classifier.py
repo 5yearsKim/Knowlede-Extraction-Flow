@@ -15,7 +15,7 @@ devloader = torch.utils.data.DataLoader(devset, batch_size=Ccfg["BATCH_SIZE"])
 
 """ define model """
 model = prepare_classifier(TYPE_CLS, Ccfg["NC"], Ccfg["N_CLASS"])
-model.apply(weights_init)
+# model.apply(weights_init)
 optimizer = torch.optim.Adam(model.parameters(), lr=Ccfg["LR"], weight_decay=Ccfg["WD"])
 
 """ criterion define """

@@ -2,26 +2,15 @@ import torch
 from dataloader import PriorDataset
 from KEflow.trainer.utils import dfs_freeze
 from KEflow.trainer import ExtractorTrainer
-from KEflow.model import prepare_classifier, AffineNICE, Glow, Extractor
+from KEflow.model import prepare_classifier, prepare_flow, Extractor
 from KEflow.model.utils import weights_init
 from KEflow.config import TYPE_FLOW, TYPE_CLS
 from KEflow.config import CLS_CONFIG as Ccfg
-if TYPE_FLOW == "NICE":
-    from KEflow.config import NICE_CONFIG as Fcfg
-elif TYPE_FLOW == "GLOW":
-    from KEflow.config import GLOW_CONFIG as Fcfg
-else:
-    raise ValueError()
+from KEflow.config import FLOW_CONFIG as Fcfg
+
 
 # define models / load classifier
-if TYPE_FLOW == "NICE":
-    flow = AffineNICE(Ccfg["NC"], Ccfg["IM_SIZE"], Fcfg["COUPLING"], Fcfg["COND_DIM"], \
-                        Fcfg["MID_DIM"], Fcfg["HIDDEN"] )
-    # flow.apply(weights_init)
-elif TYPE_FLOW == "GLOW":
-    flow = Glow(Fcfg["IN_CHANNELS"], Fcfg["MID_CHANNELS"], Fcfg["COND_DIM"], \
-                    Fcfg["NUM_LEVELS"], Fcfg["NUM_STEPS"] )
-
+flow = prepare_flow(TYPE_FLOW, Ccfg["NC"], Ccfg["N_CLASS"])
 classifier = prepare_classifier(TYPE_CLS, Ccfg["NC"], Ccfg["N_CLASS"])
 
 state_dict = torch.load("ckpts/KEflow/classifier.pt")
@@ -45,7 +34,7 @@ dev_loader = torch.utils.data.DataLoader(devset, batch_size=Fcfg["BATCH_SIZE"])
 
 # train model
 trainer = ExtractorTrainer(extractor, optimizer, train_loader, dev_loader,\
-                             num_class=Fcfg["COND_DIM"], label_smoothe=Fcfg["SMOOTHE"], best_save_path="ckpts/KEflow")
+                             num_class=Ccfg["N_CLASS"], label_smoothe=Fcfg["SMOOTHE"], best_save_path="ckpts/KEflow")
 
 # trainer.load("ckpts/KEflow/best.pt")
 trainer.train(Fcfg["EPOCHS"], Fcfg["PRINT_FREQ"], Fcfg["VAL_FREQ"])

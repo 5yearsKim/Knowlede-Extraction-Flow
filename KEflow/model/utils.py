@@ -1,6 +1,10 @@
 import torch
 from torch import nn
 from .classifier import BasicCNN, LeNet5, ResNet, vgg11_bn
+from .flow_collection import AffineNICE, Glow, RealNVP
+
+
+
 
 def prepare_classifier(cls_type, nc, n_class):
     if cls_type == "BASICCNN":
@@ -14,6 +18,15 @@ def prepare_classifier(cls_type, nc, n_class):
     else:
         raise ValueError(f"{cls_type} not supported!")
 
+def prepare_flow(flow_type, nc, n_class, im_size=32):
+    if flow_type == "NICE":
+        return AffineNICE(n_class, im_size, 10, n_class, 1024, 2)
+    elif flow_type == "GLOW":
+        return Glow(nc, 32, n_class, 3, 8)
+    elif flow_type == "REALNVP":
+        return RealNVP(2, nc, 32, num_blocks=4)
+    else:
+        raise ValueError(f"{flow_type} not supported!")
 
 def dequantize_to_logit(x, bound=0.95):
     y = (x * 255. + 5*torch.rand_like(x)) / 256.
@@ -21,7 +34,6 @@ def dequantize_to_logit(x, bound=0.95):
     y = (2 * y - 1) * bound
     y = (y + 1) / 2
     y = y.log() - (1. - y).log()
-
     return y
 
 def label_smoothe(label, smoothing=0.):
@@ -42,4 +54,4 @@ def weights_init(m, gain=0.5):
         nn.init.xavier_normal_(m.weight.data, gain=gain)
     if isinstance(m, nn.Linear):
         nn.init.xavier_normal_(m.weight.data, gain=gain)
-    
+
