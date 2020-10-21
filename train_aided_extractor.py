@@ -32,6 +32,7 @@ train_loader = torch.utils.data.DataLoader(trainset, batch_size=Fcfg["BATCH_SIZE
 dev_loader = torch.utils.data.DataLoader(devset, batch_size=Fcfg["BATCH_SIZE"])
 
 aidedset, _ = prepare_data('./data', TYPE_DATA)
+print(len(aidedset))
 aidedset, _ = torch.utils.data.random_split(aidedset, [Fcfg["NUM_AIDED_SAMPLE"], len(aidedset) - Fcfg["NUM_AIDED_SAMPLE"]])
 aided_loader = torch.utils.data.DataLoader(aidedset, batch_size=Fcfg["AIDED_BATCH_SIZE"])
 

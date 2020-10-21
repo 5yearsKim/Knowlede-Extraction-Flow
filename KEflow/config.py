@@ -1,9 +1,9 @@
 # CLSTYPE in ["BASICCNN", "LENET5", "RESNET", "VGG"]
-TYPE_CLS = "BASICCNN"
+TYPE_CLS = "LENET5"
 # TYPE in ["GLOW", "NICE", "REALNVP"]
-TYPE_FLOW = "REALNVP"
+TYPE_FLOW = "NICE"
 # TYPE in ["DIGIT", "FASHION", "SVHN", "CIFAR"]
-TYPE_DATA = "FASHION"
+TYPE_DATA = "DIGIT"
 
 '''classifier config'''
 CLS_CONFIG = {
@@ -23,11 +23,11 @@ CLS_CONFIG = {
 """ NICE Extractor config """
 FLOW_CONFIG = {
     # Dataset
-    "NUM_SAMPLE" : 1000,
-    "NUM_AIDED_SAMPLE":1024,
+    "NUM_SAMPLE" : 10000,
+    "NUM_AIDED_SAMPLE":10240,
     # Extractor config
-    "ALPHA":0.01,
-    "BETA": 1, 
+    "ALPHA":0.02,
+    "BETA": 2, 
     # train config
     "LR":5e-5,
     "WD":1e-4,

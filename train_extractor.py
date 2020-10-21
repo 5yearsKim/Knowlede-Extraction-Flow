@@ -13,8 +13,8 @@ from KEflow.config import FLOW_CONFIG as Fcfg
 flow = prepare_flow(TYPE_FLOW, Ccfg["NC"], Ccfg["N_CLASS"])
 classifier = prepare_classifier(TYPE_CLS, Ccfg["NC"], Ccfg["N_CLASS"])
 
-state_dict = torch.load("ckpts/KEflow/classifier.pt")
-# state_dict = torch.load("ckpts/from_kegnet/mnist.pth.tar")
+# state_dict = torch.load("ckpts/KEflow/classifier.pt")
+state_dict = torch.load("ckpts/from_kegnet/mnist.pth.tar")
 classifier.load_state_dict(state_dict["model_state"])
 
 extractor = Extractor(flow, classifier, Fcfg["ALPHA"], Fcfg["BETA"])
