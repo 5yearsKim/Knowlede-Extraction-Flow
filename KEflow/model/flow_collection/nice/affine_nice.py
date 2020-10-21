@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 
 # from KEflow.model.utils import dequantize_to_logit
-import KEflow.model.utils as utils
+from ..utils import dequantize_to_logit
 
 """Affine coupling layer.
 """

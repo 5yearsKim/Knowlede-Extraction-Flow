@@ -6,7 +6,7 @@ from .coupling_layer import CouplingLayer, MaskType
 from .util import squeeze_2x2
 
 # from KEflow.model.utils import dequantize_to_logit
-import KEflow.model.utils as utils
+from ..utils import dequantize_to_logit
 
 class RealNVP(nn.Module):
     """RealNVP Model

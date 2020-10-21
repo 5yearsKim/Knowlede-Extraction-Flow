@@ -6,7 +6,7 @@ from .act_norm import ActNorm
 from .coupling import Coupling
 from .inv_conv import InvConv
 
-import KEflow.model.utils as utils
+from ..utils import dequantize_to_logit
 
 class Glow(nn.Module):
     """Glow Model
