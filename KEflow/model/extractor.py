@@ -9,7 +9,7 @@ class Extractor(nn.Module):
         super(Extractor, self).__init__()
         self.flow = flow
         self.classifier = classifier
-        self.LogSoftmax = nn.LogSoftmax(dim=1)
+        self.Softmax = nn.Softmax(dim=1)
         self.alpha = float(alpha)
         self.beta = float(beta)
 
@@ -17,7 +17,9 @@ class Extractor(nn.Module):
         y, log_det_J = self.flow(x, cond, reverse=True) 
         reg = img_reg_loss(y) #regularization loss
         y = self.normalize_images(y)
-        confidence = self.LogSoftmax(self.classifier(y))
+        confidence = self.Softmax(self.classifier(y))
+        confidence = torch.clamp(confidence, 0., 0.6)
+        confidence = torch.log(confidence)
         if smoothing != 0.:
             cond = label_smoothe(cond, smoothing)
         bs, cond_dim = cond.size(0), cond.size(1)

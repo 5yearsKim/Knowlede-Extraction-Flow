@@ -14,6 +14,7 @@ flow = prepare_flow(TYPE_FLOW, Ccfg["NC"], Ccfg["N_CLASS"])
 classifier = prepare_classifier(TYPE_CLS , Ccfg["NC"], Ccfg["N_CLASS"] )
 
 state_dict = torch.load("ckpts/KEflow/classifier.pt")
+# state_dict = torch.load("ckpts/from_kegnet/mnivst.pth.tar")
 classifier.load_state_dict(state_dict["model_state"])
 
 extractor = Extractor(flow, classifier, Fcfg["ALPHA"], Fcfg["BETA"])
@@ -31,7 +32,7 @@ devset = PriorDataset(200, (Ccfg["NC"], Ccfg["IM_SIZE"], Ccfg["IM_SIZE"]), Ccfg[
 train_loader = torch.utils.data.DataLoader(trainset, batch_size=Fcfg["BATCH_SIZE"])
 dev_loader = torch.utils.data.DataLoader(devset, batch_size=Fcfg["BATCH_SIZE"])
 
-aidedset, _ = prepare_data('./data', TYPE_DATA)
+aidedset, _ = prepare_data('./data', TYPE_DATA, Normalize=False)
 print(len(aidedset))
 aidedset, _ = torch.utils.data.random_split(aidedset, [Fcfg["NUM_AIDED_SAMPLE"], len(aidedset) - Fcfg["NUM_AIDED_SAMPLE"]])
 aided_loader = torch.utils.data.DataLoader(aidedset, batch_size=Fcfg["AIDED_BATCH_SIZE"])
@@ -39,8 +40,8 @@ aided_loader = torch.utils.data.DataLoader(aidedset, batch_size=Fcfg["AIDED_BATC
 
 # train model
 trainer = AidedExtractorTrainer(extractor, optimizer, train_loader, dev_loader, aided_loader, \
-                                num_class=Ccfg["N_CLASS"], label_smoothe=Fcfg["SMOOTHE"], best_save_path="ckpts/KEflow")
-# trainer.load("ckpts/KEflow/best.pt")
+                                num_class=Ccfg["N_CLASS"], aided_weight=200, label_smoothe=Fcfg["SMOOTHE"], best_save_path="ckpts/KEflow")
+# trainer.load("ckpts/KEflow/extractor.pt")
 trainer.train(Fcfg["EPOCHS"], Fcfg["PRINT_FREQ"], Fcfg["VAL_FREQ"])
 
 # save model

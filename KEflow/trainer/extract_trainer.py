@@ -29,7 +29,7 @@ class ExtractorTrainer(Trainer):
                 acc = self.model.get_acc(x, label)
                 acc_meter.update(acc, x.size(0))
             print(f"[{epoch} epoch Validation]: acc : {acc_meter.avg}\n")
-        if acc_meter.avg > self.val_best:
+        if acc_meter.avg > 0:#self.val_best:
             self.val_best = acc_meter.avg
             path = os.path.join(self.best_save_path, "best.pt")
             self.save(path) 
@@ -50,7 +50,7 @@ class ExtractorTrainer(Trainer):
 
            
 class AidedExtractorTrainer(ExtractorTrainer):
-    def __init__(self, model, optimizer, train_loader, dev_loader, aided_loader, num_class=2, label_smoothe=0., best_save_path="ckpts"):
+    def __init__(self, model, optimizer, train_loader, dev_loader, aided_loader, num_class=2, aided_weight=1., label_smoothe=0., best_save_path="ckpts"):
         def cycle(iterable):
             while True:
                 for x in iterable:
@@ -58,6 +58,17 @@ class AidedExtractorTrainer(ExtractorTrainer):
         super(AidedExtractorTrainer, self).__init__(model, optimizer, train_loader, dev_loader, num_class, label_smoothe, best_save_path)
         self.aided_loader = iter(cycle(aided_loader))
         self.aided_loss_meter = AverageMeter()
+        self.aided_weight = aided_weight
+
+    def train_step(self, x, label, loss_meter):
+        x, label = x.to(self.device), to_one_hot(label, self.num_class).to(self.device)
+        self.optimizer.zero_grad()
+        loss = -torch.mean(self.model(x, label, smoothing=self.label_smoothe))/self.aided_weight 
+        loss.backward()
+        torch.nn.utils.clip_grad_norm_(self.model.flow.parameters(), 1)
+        self.optimizer.step()
+        loss_meter.update(loss.item())
+
 
     def on_every_step(self, i=0):
         x, label = next(self.aided_loader)
@@ -65,7 +76,7 @@ class AidedExtractorTrainer(ExtractorTrainer):
         x, label = x.to(self.device), label.to(self.device)
         self.optimizer.zero_grad()
         log_ll = self.model.flow.log_prob(x, label)
-        loss = -torch.mean(log_ll)
+        loss = -torch.mean(log_ll) 
         loss.backward()
         torch.nn.utils.clip_grad_norm_(self.model.flow.parameters(), 1.)
         self.optimizer.step()
@@ -78,5 +89,8 @@ class AidedExtractorTrainer(ExtractorTrainer):
     def preprocess(self, x, label):
         label = to_one_hot(label, self.num_class)
         return x, label
+
+    # # def train_step(self, x, label, loss_meter):
+    #     pass
 
         

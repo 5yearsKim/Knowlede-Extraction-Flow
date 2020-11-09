@@ -46,7 +46,7 @@ class RealNVP(nn.Module):
     
     def log_prob(self, x, cond):
         z, sldj = self.forward(x, cond)
-        log_ll = self.prior.log_prob(z).view(z.size(0), -1).sum(-1)
+        log_ll = self.prior.log_prob(z).reshape(z.size(0), -1).sum(-1)
         return log_ll + sldj
 
 

@@ -20,11 +20,11 @@ def prepare_classifier(cls_type, nc, n_class):
 
 def prepare_flow(flow_type, nc, n_class, im_size=32):
     if flow_type == "NICE":
-        return AffineNICE(nc, im_size, 10, n_class, 1024, 2)
+        return AffineNICE(nc, im_size, 4, n_class, 1500, 2)
     elif flow_type == "GLOW":
         return Glow(nc, 32, n_class, 3, 8)
     elif flow_type == "REALNVP":
-        return RealNVP(2, nc, 32, num_blocks=4)
+        return RealNVP(2, nc, 32, num_blocks=5)
     else:
         raise ValueError(f"{flow_type} not supported!")
 
@@ -38,10 +38,10 @@ def label_smoothe(label, smoothing=0.):
     return label
 
 def img_reg_loss(x):
-    x = x * 0.98
+    x = x * 0.95
     loss = - x.log() - (1 - x).log() + 2 * torch.tensor(0.5).log()
-    loss = (loss * 3) ** 2
-    return loss.view(x.size(0), -1).mean(1)
+    loss = loss * 100 
+    return loss.reshape(x.size(0), -1).mean(1)
 
 def weights_init(m, gain=0.5):
     if isinstance(m, nn.Conv2d):
