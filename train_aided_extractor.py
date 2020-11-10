@@ -42,7 +42,9 @@ aided_loader = torch.utils.data.DataLoader(aidedset, batch_size=Fcfg["AIDED_BATC
 trainer = AidedExtractorTrainer(extractor, optimizer, train_loader, dev_loader, aided_loader, \
                                 num_class=Ccfg["N_CLASS"], aided_weight=200, label_smoothe=Fcfg["SMOOTHE"], best_save_path="ckpts/KEflow")
 # trainer.load("ckpts/KEflow/extractor.pt")
-trainer.train(Fcfg["EPOCHS"], Fcfg["PRINT_FREQ"], Fcfg["VAL_FREQ"])
+
+# trainer.train(Fcfg["EPOCHS"], Fcfg["PRINT_FREQ"], Fcfg["VAL_FREQ"])
+trainer.loss_sum_train(Fcfg["EPOCHS"], Fcfg["PRINT_FREQ"], Fcfg["VAL_FREQ"])
 
 # save model
 trainer.save("ckpts/KEflow/extractor.pt")

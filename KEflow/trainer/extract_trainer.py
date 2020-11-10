@@ -69,7 +69,6 @@ class AidedExtractorTrainer(ExtractorTrainer):
         self.optimizer.step()
         loss_meter.update(loss.item())
 
-
     def on_every_step(self, i=0):
         x, label = next(self.aided_loader)
         x, label = self.preprocess(x, label)
@@ -94,3 +93,35 @@ class AidedExtractorTrainer(ExtractorTrainer):
     #     pass
 
         
+    def loss_sum_train(self, epochs, print_freq=10, val_freq=1):
+        rev_loss_meter, for_loss_meter = AverageMeter(), AverageMeter()
+        for epoch in range(epochs):
+            self.model.train()
+            rev_loss_meter.reset()
+            for_loss_meter.reset()
+            for i, (z, label) in enumerate(self.train_loader):
+                z, label = z.to(self.device), to_one_hot(label, self.num_class).to(self.device)
+                self.optimizer.zero_grad()
+                rev_loss = -torch.mean(self.model(z, label, smoothing=self.label_smoothe))
+
+                x, label = next(self.aided_loader)
+                x, label = self.preprocess(x, label)
+                x, label = x.to(self.device), label.to(self.device)
+                self.optimizer.zero_grad()
+                log_ll = self.model.flow.log_prob(x, label)
+                for_loss = -torch.mean(log_ll) 
+                
+                loss = for_loss + rev_loss/self.aided_weight
+                loss.backward()
+                torch.nn.utils.clip_grad_norm_(self.model.flow.parameters(), 1.)
+                self.optimizer.step()
+                for_loss_meter.update(for_loss.item())
+                rev_loss_meter.update(rev_loss.item())
+
+                if i%print_freq == 0:
+                    print(f'iter {i} : for_loss = {for_loss_meter.avg}, rev_loss = {rev_loss_meter.avg}')
+            print(f"*epoch {epoch}: for_loss = {for_loss_meter.avg}, rev_loss = {rev_loss_meter.avg}")
+            if i%val_freq ==0:
+                with torch.no_grad():
+                    val_best = self.validate(epoch)
+

@@ -19,14 +19,14 @@ class Coupling(nn.Module):
     def __init__(self, in_channels, mid_channels, cond_channels):
         super(Coupling, self).__init__()
         self.nn = NN(in_channels, mid_channels, 2 * in_channels, cond_channels)
-        self.scale = nn.Parameter(torch.ones(in_channels, 1, 1))
+        self.scale = nn.Parameter(torch.ones(in_channels, 1, 1) * 1.05)
 
     def forward(self, x, cond, ldj, reverse=False):
         x_change, x_id = x.chunk(2, dim=1)
 
         st = self.nn(x_id, cond)
         s, t = st[:, 0::2, ...], st[:, 1::2, ...]
-        s = self.scale * torch.tanh(s)
+        s = self.scale * torch.clamp(torch.tanh(s), -0.95, 0.95)
 
         # Scale and translate
         if reverse:
