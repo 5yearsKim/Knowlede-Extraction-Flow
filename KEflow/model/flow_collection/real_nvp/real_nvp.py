@@ -32,16 +32,15 @@ class RealNVP(nn.Module):
         self.prior = torch.distributions.Normal(0., 1.)
 
     def forward(self, x, cond, reverse=False):
-        
-        if not reverse:
-            x = dequantize_to_logit(x)
-
         sldj = torch.zeros(x.size(0), device=x.device)
-        x, sldj = self.flows(x, cond, sldj, reverse)
-        
+        if not reverse:
+            x, ldj = dequantize_to_logit(x)
+            sldj += ldj
+        x, ldj = self.flows(x, cond, sldj, reverse)
+        sldj += ldj
         if reverse:
-            x = torch.sigmoid(x)
-        
+            x, ldj = dequantize_to_logit(x, reverse=True)
+            sldj += ldj
         return x, sldj
     
     def log_prob(self, x, cond):

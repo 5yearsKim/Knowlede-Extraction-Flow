@@ -16,25 +16,20 @@ class Trainer:
         self.best_save_path = best_save_path
 
     def train(self, epochs, print_freq=10, val_freq=1):
-        self.on_train_start()
         loss_meter = AverageMeter()
         for epoch in range(epochs):
             self.model.train()
-            self.on_epoch_start()
             loss_meter.reset()
             for i, (x, label) in enumerate(self.train_loader):
                 self.train_step(x, label, loss_meter)
-                self.on_every_step(i=i)
                 if i%print_freq == 0:
                     print(f'iter {i} : loss = {loss_meter.avg}')
             print(f"*epoch {epoch}: loss = {loss_meter.avg}")
-            self.on_epoch_end()
             if i%val_freq ==0:
                 with torch.no_grad():
                     val_best = self.validate(epoch)
 
     def train_step(self, x, label, loss_meter):
-        x, label = self.preprocess(x, label)
         x, label = x.to(self.device), label.to(self.device)
         self.optimizer.zero_grad()
         logit = self.model(x)
@@ -66,21 +61,6 @@ class Trainer:
             self.save(path)
             print("saving BEST..") 
 
-    def on_train_start(self):
-        self.model.train()
-        # self.validate(0)
-
-    def on_epoch_start(self):
-        self.model.train()
-    
-    def on_epoch_end(self):
-        pass
-
-    def on_every_step(self, i=0):
-        pass
-    
-    def preprocess(self, x, label):
-        return x, label
             
     def save(self, save_path):
         torch.save({

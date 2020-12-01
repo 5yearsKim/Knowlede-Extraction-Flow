@@ -19,32 +19,52 @@ class AverageMeter:
         self.count += n
         self.avg = self.sum / self.count
 
-class LabelSmoothLoss(nn.Module):
-    def __init__(self, smoothing=0.0):
-        super(LabelSmoothLoss, self).__init__()
-        self.smoothing = smoothing
-    
-    def forward(self, input, target):
-        log_prob = F.log_softmax(input, dim=-1)
-        weight = input.new_ones(input.size()) * \
-            self.smoothing / (input.size(-1) - 1.)
-        weight.scatter_(-1, target.unsqueeze(-1), (1. - self.smoothing))
-        loss = (-weight * log_prob).sum(dim=-1).mean()
-        return loss
+def label_smoothe(label, smoothing=0.):
+    assert smoothing > 0 and smoothing < 0.5
+    bs, num_classes = label.size()
 
+    label = label * (1 - smoothing) + smoothing / (num_classes - 1) * (1. - label)
+    return label
 
-def dfs_freeze(model):
-    for name, child in model.named_children():
-        for param in child.parameters():
-            # print(param)
-            param.requires_grad = False
-            # print(param)
-        dfs_freeze(child)
+def img_reg_loss(x):
+    x = x * 0.95
+    loss = - x.log() - (1 - x).log() + 2 * torch.tensor(0.5).log()
+    loss = loss * 100 
+    return loss.reshape(x.size(0), -1).mean(1)
 
 
 def to_one_hot(labels, num_classes):
     y = torch.eye(num_classes)
     return y[labels]
+
+'''
+adapted from https://github.com/NVlabs/DeepInversion/blob/master/deepinversion.py
+'''
+class DeepInversionFeatureHook():
+    '''
+    Implementation of the forward hook to track feature statistics and compute a loss on them.
+    Will compute mean and variance, and will use l2 as a loss
+    '''
+    def __init__(self, module):
+        self.hook = module.register_forward_hook(self.hook_fn)
+
+    def hook_fn(self, module, input, output):
+        # hook co compute deepinversion's feature distribution regularization
+        nch = input[0].shape[1]
+        mean = input[0].mean([0, 2, 3])
+        var = input[0].permute(1, 0, 2, 3).contiguous().view([nch, -1]).var(1, unbiased=False)
+
+        #forcing mean and variance to match between two distributions
+        #other ways might work better, i.g. KL divergence
+        r_feature = torch.norm(module.running_var.data - var, 2) + 10*torch.norm(
+            module.running_mean.data - mean, 2)
+
+        self.r_feature = r_feature
+        # must have no output
+
+    def close(self):
+        self.hook.remove()
+
 
 if __name__ == "__main__":
     label = torch.tensor([1, 2, 0, 2, 2])

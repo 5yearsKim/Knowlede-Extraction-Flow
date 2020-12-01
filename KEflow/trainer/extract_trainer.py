@@ -1,127 +1,163 @@
 import torch
+from torch import nn
+import torch.nn.functional as F
 import os
+import random
 from .trainer import Trainer
-from .utils import to_one_hot, AverageMeter
+from .utils import to_one_hot, AverageMeter, DeepInversionFeatureHook, label_smoothe, img_reg_loss
 
-class ExtractorTrainer(Trainer):
-    def __init__(self, model, optimizer, train_loader, dev_loader, num_class=2, label_smoothe=0., best_save_path="ckpts/"):
+class ExtractorTrainer:
+    def __init__(self, classifier, flow, optimizer, train_loader, dev_loader, num_class=10, best_save_path="ckpts/"):
+        self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        self.classifier = classifier.to(self.device)
+        self.flow = flow.to(self.device)
+        self.optimizer = optimizer
+        self.train_loader = train_loader
+        self.dev_loader = dev_loader
+        self.val_best = 0.
         self.num_class = num_class
-        criterion=None
-        super(ExtractorTrainer, self).__init__(model, optimizer, criterion, train_loader, dev_loader, best_save_path)
-        self.label_smoothe = label_smoothe
+        self.best_save_path = best_save_path
+        self.first_bn_multiplier=5.
+        self.bn_feat_layers = []
+        for module in classifier.modules():
+            if isinstance(module, nn.BatchNorm2d):
+                self.bn_feat_layers.append(DeepInversionFeatureHook(module))
 
-    def train_step(self, x, label, loss_meter):
+    def train(self, epochs, print_freq=10, val_freq=1, spread_s=0.04, gravity_s=1, bn_s=1. ,label_smoothe=0.):
+        loss_meter = AverageMeter()
+        for epoch in range(epochs):
+            self.on_every_epoch()
+            self.flow.train()
+            loss_meter.reset()
+            for i, (x, label) in enumerate(self.train_loader):
+                self.train_step(x, label, loss_meter, spread_s, gravity_s, bn_s, label_smoothe)
+                if i%print_freq == 0:
+                    print(f'iter {i} : loss = {loss_meter.avg}')
+            print(f"*epoch {epoch}: loss = {loss_meter.avg}")
+            
+            if i%val_freq ==0:
+                with torch.no_grad():
+                    val_best = self.validate(epoch)
+
+
+    def train_step(self, x, label, loss_meter, spread_s, gravity_s, bn_s, smoothing):
         x, label = x.to(self.device), to_one_hot(label, self.num_class).to(self.device)
         self.optimizer.zero_grad()
-        loss = -torch.mean(self.model(x, label, smoothing=self.label_smoothe))
+
+        y, log_det_J = self.flow(x, label, reverse=True) 
+        reg = img_reg_loss(y) #regularization loss
+
+        lim = 2
+        # apply random jitter offsets
+        off1 = random.randint(-lim, lim)
+        off2 = random.randint(-lim, lim)
+        y = torch.roll(y, shifts=(off1,off2), dims=(2,3))
+
+        confidence = F.softmax(self.classifier(y), dim=1)
+        confidence = torch.log(confidence)
+        if smoothing != 0.:
+            label = label_smoothe(label, smoothing)
+        bs, class_dim = label.size(0), label.size(1)
+        log_ll = torch.bmm(confidence.view(bs, 1, class_dim), label.view(bs, class_dim, 1)).view(bs)
+        
+        if self.bn_feat_layers:
+            rescale = [self.first_bn_multiplier] + [1. for _ in range(len(self.bn_feat_layers)-1)]
+            bn_loss = sum([mod.r_feature * rescale[idx] for (idx, mod) in enumerate(self.bn_feat_layers)])
+        else:
+            bn_loss = 0.
+        loss = torch.mean(-log_ll - spread_s * log_det_J + gravity_s * reg) + bn_s * bn_loss
         loss.backward()
-        torch.nn.utils.clip_grad_norm_(self.model.flow.parameters(), 1)
+        torch.nn.utils.clip_grad_norm_(self.flow.parameters(), 1)
         self.optimizer.step()
         loss_meter.update(loss.item())
 
     @torch.no_grad()
     def validate(self, epoch):
-        self.model.eval()
+        self.flow.eval()
         acc_meter = AverageMeter()
         with torch.no_grad():
             for x, label in self.dev_loader:
                 x, label = x.to(self.device), to_one_hot(label, self.num_class).to(self.device)
-                acc = self.model.get_acc(x, label)
+                acc = self.get_acc(x, label)
                 acc_meter.update(acc, x.size(0))
-            print(f"[{epoch} epoch Validation]: acc : {acc_meter.avg}\n")
+            print(f"[{epoch} epoch Validation]: acc : {acc_meter.avg}")
         if acc_meter.avg > 0:#self.val_best:
             self.val_best = acc_meter.avg
             path = os.path.join(self.best_save_path, "best.pt")
             self.save(path) 
             print("saving BEST..")
 
+    def get_acc(self, x, cond):
+        y, log_det_J = self.flow(x, cond, reverse=True) 
+        _, predicted = torch.max(self.classifier(y), 1)
+        _, cond = torch.max(cond, 1)
+        hit_rate = float(predicted.eq(cond).sum())/ float(cond.size(0))
+        return hit_rate
 
 
     def save(self, save_path):
         torch.save({
-            'flow_state': self.model.flow.state_dict(),
+            'model_state': self.flow.state_dict(),
             }, save_path)
     
     def load(self, load_path):
         save_dict = torch.load(load_path)
-        self.model.flow.load_state_dict(save_dict['flow_state'])
-        # self.model.classifier.load_state_dict(save_dict['classifier_state_dict'])
+        self.flow.load_state_dict(save_dict['model_state'])
 
+    def on_every_epoch(self):
+        pass
 
            
 class AidedExtractorTrainer(ExtractorTrainer):
-    def __init__(self, model, optimizer, train_loader, dev_loader, aided_loader, num_class=2, aided_weight=1., label_smoothe=0., best_save_path="ckpts"):
+    def __init__(self, classifier, flow, optimizer, train_loader, dev_loader, aided_loader, num_class=2, aided_weight=1., best_save_path="ckpts"):
         def cycle(iterable):
             while True:
                 for x in iterable:
                     yield x
-        super(AidedExtractorTrainer, self).__init__(model, optimizer, train_loader, dev_loader, num_class, label_smoothe, best_save_path)
+        super(AidedExtractorTrainer, self).__init__(classifier, flow, optimizer, train_loader, dev_loader, num_class, best_save_path)
         self.aided_loader = iter(cycle(aided_loader))
-        self.aided_loss_meter = AverageMeter()
+        self.aided_meter = AverageMeter()
         self.aided_weight = aided_weight
 
-    def train_step(self, x, label, loss_meter):
+    def train_step(self, x, label, loss_meter, spread_s, gravity_s, bn_s, smoothing):
         x, label = x.to(self.device), to_one_hot(label, self.num_class).to(self.device)
         self.optimizer.zero_grad()
-        loss = -torch.mean(self.model(x, label, smoothing=self.label_smoothe))/self.aided_weight 
+
+        y, log_det_J = self.flow(x, label, reverse=True) 
+        reg = img_reg_loss(y) #regularization loss
+
+        lim = 2
+        # apply random jitter offsets
+        off1 = random.randint(-lim, lim)
+        off2 = random.randint(-lim, lim)
+        y = torch.roll(y, shifts=(off1,off2), dims=(2,3))
+
+        confidence = F.softmax(self.classifier(y), dim=1)
+        confidence = torch.log(confidence)
+        if smoothing != 0.:
+            label = label_smoothe(label, smoothing)
+        bs, class_dim = label.size(0), label.size(1)
+        log_ll = torch.bmm(confidence.view(bs, 1, class_dim), label.view(bs, class_dim, 1)).view(bs)
+        
+        if self.bn_feat_layers:
+            rescale = [self.first_bn_multiplier] + [1. for _ in range(len(self.bn_feat_layers)-1)]
+            bn_loss = sum([mod.r_feature * rescale[idx] for (idx, mod) in enumerate(self.bn_feat_layers)])
+        else:
+            bn_loss = 0.
+        loss = torch.mean(-log_ll - spread_s * log_det_J + gravity_s * reg) + bn_s * bn_loss
+        
+        real_img, label = next(self.aided_loader)
+        real_img, label = real_img.to(self.device), to_one_hot(label, self.num_class).to(self.device) 
+
+        aided_loss = -self.aided_weight * torch.mean(self.flow.log_prob(real_img, label)) 
+        loss += aided_loss
+
         loss.backward()
-        torch.nn.utils.clip_grad_norm_(self.model.flow.parameters(), 1)
+        torch.nn.utils.clip_grad_norm_(self.flow.parameters(), 1)
         self.optimizer.step()
         loss_meter.update(loss.item())
+        self.aided_meter.update(aided_loss.item())
 
-    def on_every_step(self, i=0):
-        x, label = next(self.aided_loader)
-        x, label = self.preprocess(x, label)
-        x, label = x.to(self.device), label.to(self.device)
-        self.optimizer.zero_grad()
-        log_ll = self.model.flow.log_prob(x, label)
-        loss = -torch.mean(log_ll) 
-        loss.backward()
-        torch.nn.utils.clip_grad_norm_(self.model.flow.parameters(), 1.)
-        self.optimizer.step()
-        self.aided_loss_meter.update(loss.item())
-    
-    def on_epoch_end(self):
-        print(f"aided_loss: {self.aided_loss_meter.avg}\n")
-        self.aided_loss_meter.reset()
-   
-    def preprocess(self, x, label):
-        label = to_one_hot(label, self.num_class)
-        return x, label
-
-    # # def train_step(self, x, label, loss_meter):
-    #     pass
-
-        
-    def loss_sum_train(self, epochs, print_freq=10, val_freq=1):
-        rev_loss_meter, for_loss_meter = AverageMeter(), AverageMeter()
-        for epoch in range(epochs):
-            self.model.train()
-            rev_loss_meter.reset()
-            for_loss_meter.reset()
-            for i, (z, label) in enumerate(self.train_loader):
-                z, label = z.to(self.device), to_one_hot(label, self.num_class).to(self.device)
-                self.optimizer.zero_grad()
-                rev_loss = -torch.mean(self.model(z, label, smoothing=self.label_smoothe))
-
-                x, label = next(self.aided_loader)
-                x, label = self.preprocess(x, label)
-                x, label = x.to(self.device), label.to(self.device)
-                self.optimizer.zero_grad()
-                log_ll = self.model.flow.log_prob(x, label)
-                for_loss = -torch.mean(log_ll) 
-                
-                loss = for_loss + rev_loss/self.aided_weight
-                loss.backward()
-                torch.nn.utils.clip_grad_norm_(self.model.flow.parameters(), 1.)
-                self.optimizer.step()
-                for_loss_meter.update(for_loss.item())
-                rev_loss_meter.update(rev_loss.item())
-
-                if i%print_freq == 0:
-                    print(f'iter {i} : for_loss = {for_loss_meter.avg}, rev_loss = {rev_loss_meter.avg}')
-            print(f"*epoch {epoch}: for_loss = {for_loss_meter.avg}, rev_loss = {rev_loss_meter.avg}")
-            if i%val_freq ==0:
-                with torch.no_grad():
-                    val_best = self.validate(epoch)
-
+    def on_every_epoch(self):
+        print(f"aided_loss : {self.aided_meter.avg}\n")
+        self.aided_meter.reset()

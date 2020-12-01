@@ -1,3 +1,4 @@
+import torch
 import torchvision
 from torchvision import transforms
 
@@ -19,7 +20,9 @@ def prepare_data(root, data_type, Normalize=True):
         ]
         if Normalize:
             transform.append(transforms.Normalize( (0.2856,), (0.3385,)))
+        print(transform)
         transform = transforms.Compose(transform)
+        # print(transform)
         trainset = torchvision.datasets.FashionMNIST(root, train=True, download=True, transform=transform)
         devset = torchvision.datasets.FashionMNIST(root, train=False, download=True, transform=transform)
     elif data_type == "SVHN":
@@ -47,3 +50,21 @@ def prepare_data(root, data_type, Normalize=True):
         raise ValueError(f"Dataset {data_type} not supported..")
     
     return trainset, devset
+
+
+def normalize_image(x, dtype='DIGIT'):
+    if dtype == 'DIGIT':
+        stat = ((0.1307,), (0.3081,)) 
+    elif dtype == 'FASHION':
+        stat = ( (0.2856,), (0.3385,))
+    elif dtype == 'SVHN' : 
+        stat =  ((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010))
+    elif dtype == 'CIFAR':
+        stat =  ((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010))
+    else:
+        raise ValueError()
+    device = x.device
+    mean, std = stat
+    mean = torch.tensor(mean).view(1, -1, 1, 1).to(device)
+    std = torch.tensor(std).view(1, -1, 1, 1).to(device)
+    return (x - mean)/std

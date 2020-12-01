@@ -100,8 +100,10 @@ class AffineNICE(nn.Module):
         return x, log_det_J
 
     def log_prob(self, x, cond):
-        x = self.image_to_vector(dequantize_to_logit(x))
+        x, sldj = dequantize_to_logit(x)
+        x = self.image_to_vector(x)
         z, log_det_J = self.f(x, cond)
+        log_det_J += sldj
         log_ll = torch.sum(self.prior.log_prob(z), dim=1)
         return log_ll + log_det_J
 
@@ -111,11 +113,15 @@ class AffineNICE(nn.Module):
             x = self.image_to_vector(x)
             x, log_det_J = self.g(x, cond)
             x = self.image_to_vector(x, reverse=True)
-            return torch.sigmoid(x), log_det_J
+            x, sldj = dequantize_to_logit(x, reverse=True)
+            log_det_J += sldj
+            return x, log_det_J
         else:
-            x = self.image_to_vector(dequantize_to_logit(x))
+            x, sldj = dequantize_to_logit(x)
+            x = self.image_to_vector(x)
             x, log_det_J = self.f(x, cond)
             x = self.image_to_vector(x, reverse=True)
+            log_det_J  += sldj
             return x, log_det_J
 
     def image_to_vector(self, x, reverse=False):

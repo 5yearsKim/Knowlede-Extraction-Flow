@@ -3,3 +3,8 @@ __pycache__
 ckpts
 inference_sample
 data
+aided_sample
+make_sample.py
+pretrained
+validate.py
+

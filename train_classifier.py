@@ -21,10 +21,10 @@ optimizer = torch.optim.Adam(model.parameters(), lr=Ccfg["LR"], weight_decay=Ccf
 criterion = torch.nn.CrossEntropyLoss()
 
 """ train """
-trainer = Trainer(model, optimizer, criterion, trainloader, devloader, best_save_path="ckpts/KEflow/")
+trainer = Trainer(model, optimizer, criterion, trainloader, devloader, best_save_path="ckpts/")
 # trainer.load("ckpts/KEflow/best.pt")
 trainer.train(Ccfg["EPOCHS"], Ccfg["PRINT_FREQ"], Ccfg["VAL_FREQ"])
 
 """ save model """
-trainer.save("ckpts/KEflow/classifier.pt")
+trainer.save("ckpts/classifier.pt")
 

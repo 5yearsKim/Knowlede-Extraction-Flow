@@ -1,10 +1,6 @@
-import torch
 from torch import nn
 from .classifier import BasicCNN, LeNet5, ResNet, vgg11_bn
 from .flow_collection import AffineNICE, Glow, RealNVP
-
-
-
 
 def prepare_classifier(cls_type, nc, n_class):
     if cls_type == "BASICCNN":
@@ -28,20 +24,6 @@ def prepare_flow(flow_type, nc, n_class, im_size=32):
     else:
         raise ValueError(f"{flow_type} not supported!")
 
-
-
-def label_smoothe(label, smoothing=0.):
-    assert smoothing > 0 and smoothing < 0.5
-    bs, num_classes = label.size()
-
-    label = label * (1 - smoothing) + smoothing / (num_classes - 1) * (1. - label)
-    return label
-
-def img_reg_loss(x):
-    x = x * 0.95
-    loss = - x.log() - (1 - x).log() + 2 * torch.tensor(0.5).log()
-    loss = loss * 100 
-    return loss.reshape(x.size(0), -1).mean(1)
 
 def weights_init(m, gain=0.5):
     if isinstance(m, nn.Conv2d):

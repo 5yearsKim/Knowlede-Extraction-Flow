@@ -37,4 +37,3 @@ class LeNet5(nn.Module):
         out = self.fc2(out)
         return out
 
- 

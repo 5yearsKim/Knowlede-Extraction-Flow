@@ -32,15 +32,17 @@ class Glow(nn.Module):
                            num_steps=num_steps)
 
     def forward(self, x, cond, reverse=False):
-        if not reverse:
-            x = dequantize_to_logit(x)
         sldj = torch.zeros(x.size(0), device=x.device)
-
+        if not reverse:
+            x, ldj = dequantize_to_logit(x)
+            sldj += ldj
         x = squeeze(x)
-        x, sldj = self.flows(x, cond, sldj, reverse)
+        x, ldj = self.flows(x, cond, sldj, reverse)
+        sldj += ldj
         x = squeeze(x, reverse=True)
         if reverse:
-            x = torch.sigmoid(x)
+            x, ldj = dequantize_to_logit(x, reverse=True)
+            sldj += ldj
         return x, sldj
 
     def log_prob(self, x, cond):

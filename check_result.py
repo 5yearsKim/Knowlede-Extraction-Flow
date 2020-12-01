@@ -8,14 +8,14 @@ from KEflow.config import FLOW_CONFIG as Fcfg
 # load model from checkpoint 
 flow = prepare_flow(TYPE_FLOW, Ccfg["NC"], Ccfg["N_CLASS"])
 
-state_dict = torch.load("ckpts/KEflow/best.pt")
-flow.load_state_dict(state_dict["flow_state"])
+state_dict = torch.load("ckpts/best.pt")
+flow.load_state_dict(state_dict["model_state"])
 
 # inference
 size = (Ccfg["NC"], Ccfg["IM_SIZE"], Ccfg["IM_SIZE"])
 inferencer = Inferencer(flow, size)
-data, label = inferencer.inference(temp=0.3)
-data = inferencer.amplify(data)
+data, label = inferencer.inference(temp=.1)
+# data = inferencer.amplify(data)
 
 # save picture
 inferencer.save_pic(data, "inference_sample/result.png")
