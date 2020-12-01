@@ -1,21 +1,21 @@
-# CLSTYPE in ["BASICCNN", "LENET5", "RESNET", "VGG"]
-TYPE_CLS = "LENET5"
+# CLSTYPE in ["BASICCNN", "LENET5", "RESNET", "VGG", "WRN"]
+TYPE_CLS = "WRN"
 # TYPE in ["GLOW", "NICE", "REALNVP"]
 TYPE_FLOW = "NICE"
 # TYPE in ["DIGIT", "FASHION", "SVHN", "CIFAR"]
-TYPE_DATA = "FASHION"
+TYPE_DATA = "SVHN"
 
 '''classifier config'''
 CLS_CONFIG = {
     # train_config
-    "BATCH_SIZE":32,
+    "BATCH_SIZE":128,
     "LR": 5e-4,
     "WD": 5e-4,
     "EPOCHS": 5,
-    "PRINT_FREQ":500,
+    "PRINT_FREQ":1000,
     "VAL_FREQ": 1,
     # model config
-    "NC":1,
+    "NC":3,
     "N_CLASS":10,
     "IM_SIZE":32,
 }
@@ -30,7 +30,7 @@ FLOW_CONFIG = {
     "GRAVITY_S": 0., 
     "BN_S": 1.,
     # train config
-    "LR":1e-4,
+    "LR":5e-4,
     "WD":1e-4,
     "SMOOTHE":0.,
     "BATCH_SIZE":64,

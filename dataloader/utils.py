@@ -28,6 +28,7 @@ def prepare_data(root, data_type, Normalize=True):
     elif data_type == "SVHN":
         stat = ((0.4378, 0.4439, 0.4729), (0.1980, 0.2011, 0.1971))
         transform = [
+            transforms.RandomCrop(32, padding=4),
             transforms.ToTensor(),
         ]
         if Normalize:
@@ -38,6 +39,8 @@ def prepare_data(root, data_type, Normalize=True):
     elif data_type == "CIFAR":
         stat =  ((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010))
         transform = [
+            transforms.RandomCrop(32, padding=4),
+            tansforms.RandomHorizontalFlip(),
             transforms.ToTensor(),
         ]
         if Normalize:

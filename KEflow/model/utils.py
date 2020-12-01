@@ -1,5 +1,5 @@
 from torch import nn
-from .classifier import BasicCNN, LeNet5, ResNet, vgg11_bn
+from .classifier import BasicCNN, LeNet5, ResNet, vgg11_bn, WideResidualNetwork
 from .flow_collection import AffineNICE, Glow, RealNVP
 
 def prepare_classifier(cls_type, nc, n_class):
@@ -11,6 +11,8 @@ def prepare_classifier(cls_type, nc, n_class):
         return ResNet(nc, n_class)
     elif cls_type == "VGG":
         return vgg11_bn(pretrained=True)
+    elif cls_type == "WRN":
+        return WideResidualNetwork((1, nc, 32, 32), n_class, base_channels=16, widening_factor=10, drop_rate=0.1, depth=28)
     else:
         raise ValueError(f"{cls_type} not supported!")
 

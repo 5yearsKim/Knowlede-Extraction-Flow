@@ -17,6 +17,7 @@ class Trainer:
 
     def train(self, epochs, print_freq=10, val_freq=1):
         loss_meter = AverageMeter()
+        self.validate(0)
         for epoch in range(epochs):
             self.model.train()
             loss_meter.reset()
@@ -43,7 +44,6 @@ class Trainer:
         loss_meter = AverageMeter()
         acc_meter = AverageMeter()
         for x, label in self.dev_loader:
-            x, label = self.preprocess(x, label)
             x, label = x.to(self.device), label.to(self.device)
             logit = self.model(x)
             # loss calculation
