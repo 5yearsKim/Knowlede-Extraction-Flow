@@ -42,7 +42,7 @@ class ExtractorTrainer:
                 self.train_step(x, label, loss_meter, spread_s, gravity_s, bn_s, label_smoothe)
                 if i%print_freq == 0:
                     print(f'iter {i} : loss = {loss_meter.avg:.3f}| ll:{self.ll_loss_meter.avg:.3f}, ldj:{self.ldj_loss_meter.avg:.3f}, grav:{self.grav_loss_meter.avg:.3f}, bn:{self.bn_loss_meter.avg:.3f} ')
-            print(f"*epoch {epoch}: loss = {loss_meter.avg}")
+            print(f'*epoch{epoch} : loss = {loss_meter.avg:.3f}| ll:{self.ll_loss_meter.avg:.3f}, ldj:{self.ldj_loss_meter.avg:.3f}, grav:{self.grav_loss_meter.avg:.3f}, bn:{self.bn_loss_meter.avg:.3f} ')
             
             if i%val_freq ==0:
                 with torch.no_grad():
