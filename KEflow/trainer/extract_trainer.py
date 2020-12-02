@@ -17,11 +17,16 @@ class ExtractorTrainer:
         self.val_best = 0.
         self.num_class = num_class
         self.best_save_path = best_save_path
-        self.first_bn_multiplier=5.
+        self.first_bn_multiplier = 5.
         self.bn_feat_layers = []
         for module in classifier.modules():
             if isinstance(module, nn.BatchNorm2d):
                 self.bn_feat_layers.append(DeepInversionFeatureHook(module))
+
+        self.ll_loss_meter = AverageMeter()
+        self.ldj_loss_meter = AverageMeter()
+        self.grav_loss_meter = AverageMeter()
+        self.bn_loss_meter = AverageMeter()
 
     def train(self, epochs, print_freq=10, val_freq=1, spread_s=0.04, gravity_s=1, bn_s=1. ,label_smoothe=0.):
         loss_meter = AverageMeter()
@@ -29,10 +34,16 @@ class ExtractorTrainer:
             self.on_every_epoch()
             self.flow.train()
             loss_meter.reset()
+            self.ll_loss_meter.reset()
+            self.ldj_loss_meter.reset()
+            self.grav_loss_meter.reset()
+            self.bn_loss_meter.reset() 
             for i, (x, label) in enumerate(self.train_loader):
                 self.train_step(x, label, loss_meter, spread_s, gravity_s, bn_s, label_smoothe)
                 if i%print_freq == 0:
-                    print(f'iter {i} : loss = {loss_meter.avg}')
+                    print(f'iter {i} : loss = {loss_meter.avg} ')
+                    print(f'll:{self.ll_loss_meter.avg:.3f}, ldj:{self.ldj_loss_meter.avg:.3f}, \
+                        grav:{self.grav_loss_meter.avg:.3f}, bn:{self.bn_loss_meter.avg:.3f} ')
             print(f"*epoch {epoch}: loss = {loss_meter.avg}")
             
             if i%val_freq ==0:
@@ -66,11 +77,22 @@ class ExtractorTrainer:
             bn_loss = sum([mod.r_feature * rescale[idx] for (idx, mod) in enumerate(self.bn_feat_layers)])
         else:
             bn_loss = 0.
-        loss = torch.mean(-log_ll - spread_s * log_det_J + gravity_s * reg) + bn_s * bn_loss
+        
+        ll_loss = - torch.mean(log_ll)
+        ldj_loss = - spread_s * torch.mean(log_det_J)
+        grav_loss = gravity_s * torch.mean(reg)
+        bn_loss = bn_s * bn_loss
+        
+        loss = ll_loss + ldj_loss + grav_loss + bn_loss
         loss.backward()
         torch.nn.utils.clip_grad_norm_(self.flow.parameters(), 1)
         self.optimizer.step()
+        
         loss_meter.update(loss.item())
+        self.ll_loss_meter.update(ll_loss.item())
+        self.ldj_loss_meter.update(ldj_loss.item())
+        self.grav_loss_meter.update(grav_loss.item())
+        self.bn_loss_meter.update(bn_loss.item())
 
     @torch.no_grad()
     def validate(self, epoch):

@@ -17,7 +17,6 @@ class Trainer:
 
     def train(self, epochs, print_freq=10, val_freq=1):
         loss_meter = AverageMeter()
-        self.validate(0)
         for epoch in range(epochs):
             self.model.train()
             loss_meter.reset()
