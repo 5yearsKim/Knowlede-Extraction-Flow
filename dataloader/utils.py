@@ -4,51 +4,48 @@ from torchvision import transforms
 
 def prepare_data(root, data_type, Normalize=True):
     if data_type == "DIGIT":
-        transform =[
+        transform = transforms.Compose([
             transforms.Resize(32),
             transforms.ToTensor(),
-        ]
-        if Normalize:
-            transform.append(transforms.Normalize((0.1307,), (0.3081,)) )
-        transform = transforms.Compose(transform)
+            transforms.Normalize((0.1307,), (0.3081,)) 
+        ])
         trainset = torchvision.datasets.MNIST(root, train=True, download=True, transform=transform)
         devset = torchvision.datasets.MNIST(root, train=False, download=True, transform=transform)
     elif data_type == "FASHION":
-        transform =[
+        transform = transforms.Compose([
             transforms.Resize(32),
             transforms.ToTensor(),
-        ]
-        if Normalize:
-            transform.append(transforms.Normalize( (0.2856,), (0.3385,)))
-        print(transform)
-        transform = transforms.Compose(transform)
-        # print(transform)
+            transforms.Normalize( (0.2856,), (0.3385,))
+        ])
         trainset = torchvision.datasets.FashionMNIST(root, train=True, download=True, transform=transform)
         devset = torchvision.datasets.FashionMNIST(root, train=False, download=True, transform=transform)
     elif data_type == "SVHN":
         stat = ((0.4378, 0.4439, 0.4729), (0.1980, 0.2011, 0.1971))
-        transform = [
+        transform_train = transforms.Compose([
             transforms.RandomCrop(32, padding=4),
             transforms.ToTensor(),
-        ]
-        if Normalize:
-            transform.append(transforms.Normalize(*stat))   
-        transform = transforms.Compose(transform)
-        trainset = torchvision.datasets.SVHN(root, split='train', download=True, transform=transform)
-        devset = torchvision.datasets.SVHN(root, split='test', download=True, transform=transform)
+            transforms.Normalize(*stat)
+        ])
+        transform_test = transforms.Compose([
+            transforms.ToTensor(),
+            transforms.Normalize(*stat)
+        ])
+        trainset = torchvision.datasets.SVHN(root, split='train', download=True, transform=transform_train)
+        devset = torchvision.datasets.SVHN(root, split='test', download=True, transform=transform_test)
     elif data_type == "CIFAR":
         stat =  ((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010))
-        transform = [
+        transform_train = transforms.Compose([
+            transforms.RandomHorizontalFlip(),
             transforms.RandomCrop(32, padding=4),
-            tansforms.RandomHorizontalFlip(),
             transforms.ToTensor(),
-        ]
-        if Normalize:
-            transform.append(transforms.Normalize(*stat)) 
-        transform = transforms.Compose(transform)
-        
-        trainset = torchvision.datasets.CIFAR10(root, train=True, download=True, transform=transform)
-        devset = torchvision.datasets.CIFAR10(root, train=False, download=True, transform=transform)
+            transforms.Normalize(*stat)
+        ])
+        transform_test = transforms.Compose([
+            transforms.ToTensor(),
+            transforms.Normalize(*stat)
+        ])       
+        trainset = torchvision.datasets.CIFAR10(root, train=True, download=True, transform=transform_train)
+        devset = torchvision.datasets.CIFAR10(root, train=False, download=True, transform=transform_test)
     else:
         raise ValueError(f"Dataset {data_type} not supported..")
     

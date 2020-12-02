@@ -9,7 +9,7 @@ TYPE_DATA = "SVHN"
 CLS_CONFIG = {
     # train_config
     "BATCH_SIZE":128,
-    "LR": 5e-4,
+    "LR": 1e-4,
     "WD": 5e-4,
     "EPOCHS": 5,
     "PRINT_FREQ":1000,
