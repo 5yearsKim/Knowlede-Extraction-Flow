@@ -8,7 +8,7 @@ from KEflow.config import FLOW_CONFIG as Fcfg
 # load model from checkpoint 
 flow = prepare_flow(TYPE_FLOW, Ccfg["NC"], Ccfg["N_CLASS"])
 
-state_dict = torch.load("ckpts/best.pt")
+state_dict = torch.load("ckpts/flow_best.pt")
 flow.load_state_dict(state_dict["model_state"])
 
 # inference

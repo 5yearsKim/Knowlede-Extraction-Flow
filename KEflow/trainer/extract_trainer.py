@@ -3,13 +3,12 @@ from torch import nn
 import torch.nn.functional as F
 import os
 import random
-from .trainer import Trainer
 from .utils import to_one_hot, AverageMeter, DeepInversionFeatureHook, label_smoothe, img_reg_loss
 
 class ExtractorTrainer:
     def __init__(self, classifier, flow, optimizer, train_loader, dev_loader, num_class=10, best_save_path="ckpts/"):
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-        self.classifier = classifier.to(self.device)
+        self.classifier = classifier.to(self.device).eval()
         self.flow = flow.to(self.device)
         self.optimizer = optimizer
         self.train_loader = train_loader
@@ -64,6 +63,7 @@ class ExtractorTrainer:
         y = torch.roll(y, shifts=(off1,off2), dims=(2,3))
 
         confidence = F.softmax(self.classifier(y), dim=1)
+        # confidence = torch.clamp(confidence, 0., 0.7)
         confidence = torch.log(confidence)
         if smoothing != 0.:
             label = label_smoothe(label, smoothing)
@@ -104,7 +104,7 @@ class ExtractorTrainer:
             print(f"[{epoch} epoch Validation]: acc : {acc_meter.avg}")
         if acc_meter.avg > 0:#self.val_best:
             self.val_best = acc_meter.avg
-            path = os.path.join(self.best_save_path, "best.pt")
+            path = os.path.join(self.best_save_path, "flow_best.pt")
             self.save(path) 
             print("saving BEST..")
 
