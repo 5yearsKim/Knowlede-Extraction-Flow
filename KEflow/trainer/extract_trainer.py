@@ -54,7 +54,7 @@ class ExtractorTrainer:
 
         y, log_det_J = self.flow(x, label, reverse=True) 
         reg = img_reg_loss(y) #regularization loss
-        y = 2*y -1.
+        y = y - 0.5
 
         lim = 2
         # apply random jitter offsets
@@ -82,6 +82,9 @@ class ExtractorTrainer:
         bn_loss = bn_s * bn_loss
         
         loss = ll_loss + ldj_loss + grav_loss + bn_loss
+        if not torch.isfinite(loss):
+            print(f'loss {loss} NaN detected')
+            return None
         loss.backward()
         torch.nn.utils.clip_grad_norm_(self.flow.parameters(), 1)
         self.optimizer.step()
@@ -110,7 +113,7 @@ class ExtractorTrainer:
 
     def get_acc(self, x, cond):
         y, log_det_J = self.flow(x, cond, reverse=True) 
-        y = 2 * y - 1.
+        y =  y - .5
         _, predicted = torch.max(self.classifier(y), 1)
         _, cond = torch.max(cond, 1)
         hit_rate = float(predicted.eq(cond).sum())/ float(cond.size(0))

@@ -21,14 +21,14 @@ class Coupling(nn.Module):
 
         self.in_block = nn.Sequential(
             nn.Linear(in_out_dim//2, mid_dim),
-            nn.ReLU())
+            nn.LeakyReLU())
         self.cond_block = nn.Sequential(
             nn.Linear(cond_dim, mid_dim),
-            nn.ReLU())
+            nn.LeakyReLU())
         self.mid_block = nn.ModuleList([
             nn.Sequential(
                 nn.Linear(mid_dim, mid_dim),
-                nn.ReLU()) for _ in range(hidden - 1)])
+                nn.LeakyReLU()) for _ in range(hidden - 1)])
         self.out_block = nn.Linear(mid_dim, (in_out_dim//2) * 2)
     
 
@@ -53,8 +53,8 @@ class Coupling(nn.Module):
         off_ = self.out_block(off_)
         s, shift = off_.split(W//2, dim=1)
         
-        # log_scale = self.scale * torch.clamp(torch.tanh(s), -0.95, 0.95)
-        log_scale = self.scale * torch.tanh(s)
+        log_scale = self.scale * torch.clamp(torch.tanh(s), -0.95, 0.95)
+        # log_scale = self.scale * torch.tanh(s)
         # print(log_scale.max().item(), log_scale.min().item())
         if reverse:
             on = (on - shift) * torch.exp(-log_scale)
