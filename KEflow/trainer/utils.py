@@ -61,7 +61,7 @@ class DeepInversionFeatureHook():
 
         #forcing mean and variance to match between two distributions
         #other ways might work better, i.g. KL divergence
-        r_feature = torch.norm(module.running_var.data - var, 2) + torch.norm(
+        r_feature =  torch.norm(module.running_var.data - var, 2) + 2 * torch.norm(
             module.running_mean.data - mean, 2)
 
         self.r_feature = r_feature

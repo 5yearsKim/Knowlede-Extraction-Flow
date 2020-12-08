@@ -17,10 +17,11 @@ class ExtractorTrainer:
         self.val_best = 0.
         self.num_class = num_class
         self.best_save_path = best_save_path
-        self.first_bn_multiplier = 5.
+        self.first_bn_multiplier = 2.
         self.bn_feat_layers = []
         for module in classifier.modules():
             if isinstance(module, nn.BatchNorm2d):
+                print('*')
                 self.bn_feat_layers.append(DeepInversionFeatureHook(module))
 
         self.ll_loss_meter = AverageMeter()
@@ -31,8 +32,9 @@ class ExtractorTrainer:
     def img_to_classifier(self, y):
         amp = random.uniform(1., 2. )
         return  amp * (y - 0.5)
-        # return normalize_image(y)
-    
+        # return y
+
+
     def train(self, epochs, print_freq=10, val_freq=1, spread_s=0.04, gravity_s=1, bn_s=1. ,label_smoothe=0.):
         loss_meter = AverageMeter()
         for epoch in range(epochs):
@@ -62,11 +64,11 @@ class ExtractorTrainer:
         reg = img_reg_loss(y) #regularization loss
         y = self.img_to_classifier(y)
 
-        lim = 2
-        # apply random jitter offsets
-        off1 = random.randint(-lim, lim)
-        off2 = random.randint(-lim, lim)
-        y = torch.roll(y, shifts=(off1,off2), dims=(2,3))
+        # lim = 2
+        # # apply random jitter offsets
+        # off1 = random.randint(-lim, lim)
+        # off2 = random.randint(-lim, lim)
+        # y = torch.roll(y, shifts=(off1,off2), dims=(2,3))
 
         confidence = F.softmax(self.classifier(y), dim=1)
         # confidence = torch.clamp(confidence, 0., 0.7)
