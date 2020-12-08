@@ -3,7 +3,7 @@ TYPE_CLS = "BASICCNN"
 # TYPE in ["GLOW", "NICE", "REALNVP"]
 TYPE_FLOW = "NICE"
 # TYPE in ["DIGIT", "FASHION", "SVHN", "CIFAR"]
-TYPE_DATA = "SVHN"
+TYPE_DATA = "CIFAR"
 
 '''classifier config'''
 CLS_CONFIG = {
@@ -11,7 +11,7 @@ CLS_CONFIG = {
     "BATCH_SIZE":128,
     "LR": 1e-4,
     "WD": 5e-4,
-    "EPOCHS": 5,
+    "EPOCHS": 20,
     "PRINT_FREQ":1000,
     "VAL_FREQ": 1,
     # model config
@@ -25,16 +25,16 @@ FLOW_CONFIG = {
     # Dataset
     "NUM_SAMPLE" : 10000,
     # Extractor config
-    "SPREAD_S":0.05,
+    "SPREAD_S":0.02,
     "GRAVITY_S": 0., 
-    "BN_S": 10.,
+    "BN_S": 5.,
     # train config
-    "LR":5e-5,
-    "WD":1e-4,
+    "LR":2e-5,
+    "WD":1e-2,
     "SMOOTHE":0.,
     "BATCH_SIZE":64,
     "EPOCHS":100,
-    "PRINT_FREQ":500,
+    "PRINT_FREQ":100,
     "VAL_FREQ":1,
 }
 

@@ -18,7 +18,7 @@ def prepare_classifier(cls_type, nc, n_class):
 
 def prepare_flow(flow_type, nc, n_class, im_size=32):
     if flow_type == "NICE":
-        return AffineNICE(nc, im_size, 4, n_class, 1500, 2)
+        return AffineNICE(nc, im_size, 8, n_class, 1500, 2)
     elif flow_type == "GLOW":
         return Glow(nc, 32, n_class, 3, 8)
     elif flow_type == "REALNVP":

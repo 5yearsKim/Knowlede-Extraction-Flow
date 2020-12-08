@@ -32,6 +32,11 @@ def img_reg_loss(x):
     loss = loss * 100 
     return loss.reshape(x.size(0), -1).mean(1)
 
+def normalize_images(layer):
+    mean = layer.mean(dim=(2, 3), keepdim=True)
+    std = layer.view((layer.size(0), layer.size(1), -1)) \
+        .std(dim=2, keepdim=True).unsqueeze(3)
+    return (layer - mean) / std
 
 def to_one_hot(labels, num_classes):
     y = torch.eye(num_classes)

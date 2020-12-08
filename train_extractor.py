@@ -29,7 +29,7 @@ dev_loader = torch.utils.data.DataLoader(devset, batch_size=Fcfg["BATCH_SIZE"])
 trainer = ExtractorTrainer(classifier, flow, optimizer, train_loader, dev_loader,\
                             num_class=Ccfg["N_CLASS"], best_save_path="ckpts")
 
-# trainer.load("ckpts/flow_best.pt")
+trainer.load("ckpts/flow_best.pt")
 trainer.train(Fcfg["EPOCHS"], Fcfg["PRINT_FREQ"], Fcfg["VAL_FREQ"], Fcfg["SPREAD_S"], Fcfg["GRAVITY_S"], Fcfg["BN_S"])
 
 # save model
