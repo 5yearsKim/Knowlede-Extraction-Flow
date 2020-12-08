@@ -29,6 +29,11 @@ class Coupling(nn.Module):
             nn.Sequential(
                 nn.Linear(mid_dim, mid_dim),
                 nn.LeakyReLU()) for _ in range(hidden - 1)])
+
+        self.cond_mid_block = nn.ModuleList([
+            nn.Sequential(
+                nn.Linear(cond_dim, mid_dim),
+                nn.LeakyReLU()) for _ in range(hidden - 1)])
         self.out_block = nn.Linear(mid_dim, (in_out_dim//2) * 2)
     
 
@@ -49,7 +54,7 @@ class Coupling(nn.Module):
 
         off_ = self.in_block(off) + self.cond_block(cond)
         for i in range(len(self.mid_block)):
-            off_ = self.mid_block[i](off_)
+            off_ = self.mid_block[i](off_) + self.cond_mid_block[i](cond)
         off_ = self.out_block(off_)
         s, shift = off_.split(W//2, dim=1)
         
