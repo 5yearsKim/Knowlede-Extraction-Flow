@@ -2,7 +2,7 @@ import torch
 import torchvision
 from torchvision import transforms
 
-def prepare_data(root, data_type, Normalize=True):
+def prepare_data(root, data_type):
     if data_type == "DIGIT":
         transform = transforms.Compose([
             transforms.Resize(32),

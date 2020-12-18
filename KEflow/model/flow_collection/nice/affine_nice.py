@@ -58,8 +58,8 @@ class Coupling(nn.Module):
         off_ = self.out_block(off_)
         s, shift = off_.split(W//2, dim=1)
         
-        log_scale = self.scale * torch.clamp(torch.tanh(s), -0.95, 0.95)
-        # log_scale = self.scale * torch.tanh(s)
+        # log_scale = self.scale * torch.clamp(torch.tanh(s), -0.95, 0.95)
+        log_scale = self.scale * torch.tanh(s)
         # print(log_scale.max().item(), log_scale.min().item())
         if reverse:
             on = (on - shift) * torch.exp(-log_scale)

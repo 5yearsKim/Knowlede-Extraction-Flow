@@ -21,7 +21,6 @@ class ExtractorTrainer:
         self.bn_feat_layers = []
         for module in classifier.modules():
             if isinstance(module, nn.BatchNorm2d):
-                print('*')
                 self.bn_feat_layers.append(DeepInversionFeatureHook(module))
 
         self.ll_loss_meter = AverageMeter()
@@ -81,7 +80,7 @@ class ExtractorTrainer:
             rescale = [self.first_bn_multiplier] + [1. for _ in range(len(self.bn_feat_layers)-1)]
             bn_loss = sum([mod.r_feature * rescale[idx] for (idx, mod) in enumerate(self.bn_feat_layers)])
         else:
-            bn_loss = 0.
+            bn_loss = torch.tensor(0.)
         
         ll_loss = - torch.mean(log_ll)
         ldj_loss = - spread_s * torch.mean(log_det_J)
@@ -160,11 +159,11 @@ class AidedExtractorTrainer(ExtractorTrainer):
         reg = img_reg_loss(y) #regularization loss
         self.img_to_classifier(y)
 
-        lim = 1
-        # apply random jitter offsets
-        off1 = random.randint(-lim, lim)
-        off2 = random.randint(-lim, lim)
-        y = torch.roll(y, shifts=(off1,off2), dims=(2,3))
+        # lim = 1
+        # # apply random jitter offsets
+        # off1 = random.randint(-lim, lim)
+        # off2 = random.randint(-lim, lim)
+        # y = torch.roll(y, shifts=(off1,off2), dims=(2,3))
 
         confidence = F.softmax(self.classifier(y), dim=1)
         confidence = torch.log(confidence)
@@ -177,7 +176,7 @@ class AidedExtractorTrainer(ExtractorTrainer):
             rescale = [self.first_bn_multiplier] + [1. for _ in range(len(self.bn_feat_layers)-1)]
             bn_loss = sum([mod.r_feature * rescale[idx] for (idx, mod) in enumerate(self.bn_feat_layers)])
         else:
-            bn_loss = 0.
+            bn_loss = torch.tensor(0.)
         
         ll_loss = - torch.mean(log_ll)
         ldj_loss = - spread_s * torch.mean(log_det_J)
@@ -206,7 +205,22 @@ class AidedExtractorTrainer(ExtractorTrainer):
         self.bn_loss_meter.update(bn_loss.item())
         self.aided_meter.update(aided_loss.item())
 
-       
+    def flow_train_step(self, epoch ):
+        loss_meter = AverageMeter()
+        for i in range(epoch):
+            real_img, label = next(self.aided_loader)
+            real_img, label = real_img.to(self.device), to_one_hot(label, self.num_class).to(self.device) 
+
+            loss = -self.aided_weight * torch.mean(self.flow.log_prob(real_img, label)) 
+    
+            loss.backward()
+            torch.nn.utils.clip_grad_norm_(self.flow.parameters(), 1)
+            self.optimizer.step()
+            
+            loss_meter.update(loss.item())
+        print(f'total loss = {loss_meter.avg}')
+        self.save('ckpts/flow_best.pt')
+
     def on_every_epoch(self):
         print(f"aided_loss : {self.aided_meter.avg}\n")
         self.aided_meter.reset()

@@ -11,7 +11,7 @@ from KEflow.config import FLOW_CONFIG as Fcfg
 flow = prepare_flow(TYPE_FLOW, Ccfg["NC"], Ccfg["N_CLASS"])
 classifier = prepare_classifier(TYPE_CLS , Ccfg["NC"], Ccfg["N_CLASS"] )
 
-state_dict = torch.load("ckpts/classifier.pt")
+state_dict = torch.load(f"ckpts/classifier_{TYPE_DATA.lower()}_{TYPE_CLS.lower()}.pt")
 # state_dict = torch.load("ckpts/from_kegnet/mnivst.pth.tar")
 classifier.load_state_dict(state_dict["model_state"])
 
@@ -19,8 +19,8 @@ classifier.load_state_dict(state_dict["model_state"])
 optimizer = torch.optim.Adam(flow.parameters(), Fcfg["LR"], weight_decay=Fcfg["WD"])
 
 # dataloader setting
-trainset = PriorDataset(Fcfg["NUM_SAMPLE"], (Ccfg["NC"], Ccfg["IM_SIZE"], Ccfg["IM_SIZE"]), Ccfg["N_CLASS"])
-devset = PriorDataset(200, (Ccfg["NC"], Ccfg["IM_SIZE"], Ccfg["IM_SIZE"]), Ccfg["N_CLASS"])
+trainset = PriorDataset(Fcfg["NUM_SAMPLE"], (Ccfg["NC"], Ccfg["IM_SIZE"], Ccfg["IM_SIZE"]), Ccfg["N_CLASS"], temp=0.5)
+devset = PriorDataset(200, (Ccfg["NC"], Ccfg["IM_SIZE"], Ccfg["IM_SIZE"]), Ccfg["N_CLASS"], temp=0.5)
 
 train_loader = torch.utils.data.DataLoader(trainset, batch_size=Fcfg["BATCH_SIZE"])
 dev_loader = torch.utils.data.DataLoader(devset, batch_size=Fcfg["BATCH_SIZE"])
