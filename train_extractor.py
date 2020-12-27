@@ -2,7 +2,7 @@ import torch
 from dataloader import PriorDataset
 from KEflow.trainer import ExtractorTrainer
 from KEflow.model import prepare_classifier, prepare_flow
-from KEflow.config import TYPE_FLOW, TYPE_CLS
+from KEflow.config import TYPE_FLOW, TYPE_CLS, TYPE_DATA
 from KEflow.config import CLS_CONFIG as Ccfg
 from KEflow.config import FLOW_CONFIG as Fcfg
 
@@ -32,5 +32,5 @@ trainer = ExtractorTrainer(classifier, flow, optimizer, train_loader, dev_loader
 # trainer.load("ckpts/flow_best.pt")
 trainer.train(Fcfg["EPOCHS"], Fcfg["PRINT_FREQ"], Fcfg["VAL_FREQ"], Fcfg["SPREAD_S"], Fcfg["GRAVITY_S"], Fcfg["BN_S"])
 
-# save model
-trainer.save("ckpts/flow.pt")
+# # save model
+# trainer.save("ckpts/flow.pt")

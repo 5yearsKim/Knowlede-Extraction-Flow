@@ -26,5 +26,5 @@ trainer = Trainer(model, optimizer, criterion, trainloader, devloader, best_save
 trainer.train(Ccfg["EPOCHS"], Ccfg["PRINT_FREQ"], Ccfg["VAL_FREQ"])
 
 """ save model """
-trainer.save("ckpts/classifier.pt")
+trainer.save(f"ckpts/classifier.pt")
 

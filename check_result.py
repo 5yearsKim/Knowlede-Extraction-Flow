@@ -15,7 +15,7 @@ flow.load_state_dict(state_dict["model_state"])
 size = (Ccfg["NC"], Ccfg["IM_SIZE"], Ccfg["IM_SIZE"])
 inferencer = Inferencer(flow, size)
 data, label = inferencer.inference(temp=.0)
-# data = inferencer.amplify(data)
+data = inferencer.amplify(data)
 
 # save picture
 inferencer.save_pic(data, "inference_sample/result.png")
