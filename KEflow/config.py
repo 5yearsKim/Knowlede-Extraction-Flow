@@ -1,5 +1,5 @@
 # CLSTYPE in ["BASICCNN", "LENET5", "RESNET", "VGG", "WRN"]
-TYPE_CLS = "RESNET"
+TYPE_CLS = "BASICCNN"
 # TYPE in ["GLOW", "NICE", "REALNVP"]
 TYPE_FLOW = "NICE"
 # TYPE in ["DIGIT", "FASHION", "SVHN", "CIFAR"]
@@ -9,8 +9,8 @@ TYPE_DATA = "SVHN"
 CLS_CONFIG = {
     # train_config
     "BATCH_SIZE":64,
-    "LR": 4e-4,
-    "WD": 5e-3,
+    "LR": 1e-4,
+    "WD": 0,
     "EPOCHS": 20,
     "PRINT_FREQ":1000,
     "VAL_FREQ": 1,
@@ -25,17 +25,18 @@ FLOW_CONFIG = {
     # Dataset
     "NUM_SAMPLE" : 10000,
     # Extractor config
-    "SPREAD_S":0.05,
+    "SPREAD_S":0.02,
     "GRAVITY_S": 0.,
-    "BN_S": .2,
+    "BN_S": 2,
     # train config
-    "LR":1e-4,
+    "LR":1e-5,
     "WD":0.,
     "SMOOTHE":0.,
     "BATCH_SIZE":64,
     "EPOCHS":20,
     "PRINT_FREQ":100,
     "VAL_FREQ":1,
+    "AIDED_WEIGHT" : 0.005
 }
 
 

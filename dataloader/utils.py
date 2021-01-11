@@ -14,6 +14,7 @@ def prepare_data(root, data_type):
     elif data_type == "FASHION":
         transform = transforms.Compose([
             transforms.Resize(32),
+            transforms.RandomHorizontalFlip(),
             transforms.ToTensor(),
             transforms.Normalize( (0.2856,), (0.3385,))
         ])

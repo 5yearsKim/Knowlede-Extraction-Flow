@@ -30,7 +30,7 @@ aided_loader = torch.utils.data.DataLoader(aidedset, batch_size=10)
 
 # train model
 trainer = AidedExtractorTrainer(classifier, flow, optimizer, train_loader, dev_loader, aided_loader, \
-                                num_class=Ccfg["N_CLASS"], aided_weight=.2, best_save_path="ckpts/")
+                                num_class=Ccfg["N_CLASS"], aided_weight=Fcfg["AIDED_WEIGHT"], best_save_path="ckpts/")
 # trainer.load("ckpts/flow_best.pt")
 
 trainer.train(Fcfg["EPOCHS"], Fcfg["PRINT_FREQ"], Fcfg["VAL_FREQ"],  Fcfg["SPREAD_S"], Fcfg["GRAVITY_S"], Fcfg["BN_S"])

@@ -5,6 +5,7 @@ import os
 import random
 from .utils import to_one_hot, AverageMeter, DeepInversionFeatureHook, label_smoothe, img_reg_loss
 from dataloader.utils import normalize_image
+import torchvision
 
 class ExtractorTrainer:
     def __init__(self, classifier, flow, optimizer, train_loader, dev_loader, num_class=10, best_save_path="ckpts/"):
@@ -117,7 +118,16 @@ class ExtractorTrainer:
             path = os.path.join(self.best_save_path, "flow_best.pt")
             self.save(path) 
             print("saving BEST..")
+        self.save_pic(f'inference_sample/val_{epoch}.png', epoch=epoch, nc=x.size(1))
 
+    def save_pic(self, path, epoch=0, temp=0., nc=3):
+        label = torch.arange(0, 10)
+        _label = to_one_hot(label, self.num_class).to(self.device)
+        z = torch.randn(10 ,*(nc, 32, 32)).to(self.device) * temp
+        x, _ = self.flow(z, _label, reverse=True)
+        torchvision.utils.save_image(x.to('cpu'), path, nrow=10)
+
+    
     def get_acc(self, x, cond):
         y, log_det_J = self.flow(x, cond, reverse=True) 
         y = self.img_to_classifier(y)

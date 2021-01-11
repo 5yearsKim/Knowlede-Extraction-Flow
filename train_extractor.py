@@ -12,7 +12,7 @@ flow = prepare_flow(TYPE_FLOW, Ccfg["NC"], Ccfg["N_CLASS"])
 classifier = prepare_classifier(TYPE_CLS, Ccfg["NC"], Ccfg["N_CLASS"])
 
 state_dict = torch.load(f"ckpts/classifier_{TYPE_DATA.lower()}_{TYPE_CLS.lower()}.pt")
-# state_dict = torch.load("ckpts/from_kegnet/fashion.pth.tar", map_location='cuda:0')
+# state_dict = torch.load(f"kegnet_pretrained/{TYPE_DATA.lower()}.pth.tar", map_location='cuda:0')
 classifier.load_state_dict(state_dict["model_state"])
 
 # optimizer
