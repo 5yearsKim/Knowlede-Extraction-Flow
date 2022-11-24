@@ -1,5 +1,7 @@
   # Knowledge Extraction Glow
 
+*30th December, 2020*
+
 ## Insight
 
 It is common to train Deep Neural Network with large data to classify it's label. The question is, is it also possible to re-generate training data only through trained model? And utilize re-generated data for something useful, for instance data-augmentation?
@@ -19,6 +21,10 @@ We combined Normalizing-flow with fully trained classifier model(MNIST classifie
 <br>
 
 ## Result
+
+> ### NOTE: Below images are generated from generator which is trained only with fully trained classifier
+
+<br>
 
 <img src='demo_imgs/image_generated.png' width='400'/>
 
